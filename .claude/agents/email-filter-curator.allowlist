@@ -1,0 +1,12 @@
+# Allowed Bash prefixes for the email filter curator
+gws gmail users settings filters list
+gws gmail users settings filters get
+gws gmail users settings filters create
+gws gmail users labels list
+gws gmail users messages list
+gws schema
+
+# Pipelines into these read-only filters are also permitted by bash-guard
+# (safe read-only filters, enforced in bash-guard.py SAFE_FILTERS):
+#   jq grep head tail cut sort uniq wc tr cat rev nl column
+# e.g.  gws gmail users settings filters list --params '{...}' | jq '.filter[].criteria'

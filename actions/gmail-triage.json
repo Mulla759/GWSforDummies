@@ -1,0 +1,9 @@
+{
+  "id": "gmail-triage",
+  "title": "Gmail triage + labeling",
+  "description": "Scan untriaged inbox mail, run per-message security analysis, classify relationships and content, apply category/priority labels, and curate standing filters.",
+  "keywords": ["triage", "label", "inbox", "email", "gmail", "sort mail", "classify", "phishing", "security", "filter"],
+  "kind": "agent",
+  "target": "email-triage-orchestrator",
+  "interactive": true
+}

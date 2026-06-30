@@ -1,0 +1,9 @@
+{
+  "id": "weekly-digest",
+  "title": "Weekly digest",
+  "description": "Read-only weekly summary: this week's meetings, unread email count, and how much inbox mail was labeled in the last 7 days.",
+  "keywords": ["weekly", "digest", "summary", "this week", "recap", "overview", "unread count", "meetings this week"],
+  "kind": "script",
+  "target": "scripts/weekly-digest.sh",
+  "interactive": false
+}

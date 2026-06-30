@@ -1,0 +1,9 @@
+{
+  "id": "gmail-actions",
+  "title": "Email -> Tasks & Calendar",
+  "description": "Turn actionable, already-triaged email into Google Tasks and Calendar events. Proposes each item, confirms with you, then creates the approved ones.",
+  "keywords": ["task", "calendar", "event", "todo", "schedule from email", "action required", "follow up", "reminder", "meeting"],
+  "kind": "agent",
+  "target": "email-action-orchestrator",
+  "interactive": true
+}

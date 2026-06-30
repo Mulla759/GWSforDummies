@@ -1,0 +1,13 @@
+# Allowed Bash prefixes for the email labeler
+gws gmail users messages modify
+gws gmail users threads modify
+gws gmail users labels list
+gws gmail users labels create
+gws gmail users labels delete
+gws gmail users labels patch
+gws schema
+
+# Pipelines into these read-only filters are also permitted by bash-guard
+# (safe read-only filters, enforced in bash-guard.py SAFE_FILTERS):
+#   jq grep head tail cut sort uniq wc tr cat rev nl column
+# e.g.  gws gmail users messages get --params '{...}' | jq '.payload.headers'

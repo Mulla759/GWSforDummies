@@ -1,0 +1,9 @@
+{
+  "id": "nightly-label",
+  "title": "Nightly deterministic labeler",
+  "description": "Apply sender->label rules to recent inbox mail with no LLM. Fast, free, and idempotent. The same script the scheduled automation runs.",
+  "keywords": ["nightly", "auto-label", "deterministic", "rules", "batch label", "no ai", "cron"],
+  "kind": "script",
+  "target": "scripts/nightly-label.sh",
+  "interactive": false
+}

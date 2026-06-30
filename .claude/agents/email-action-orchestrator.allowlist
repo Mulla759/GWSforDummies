@@ -1,0 +1,10 @@
+# Allowed Bash prefixes for the Phase 2 action orchestrator ITSELF.
+# Like the triage orchestrator, it only DISCOVERS and delegates. The single thing it
+# runs directly is listing the actionable mail; extraction (read) and creation (write
+# to Tasks/Calendar) belong to its subagents, each gated by its own allowlist.
+gws gmail users messages list
+gws gmail users threads list
+gws schema
+
+# Read-only filter pipes permitted by bash-guard:
+#   jq grep head tail cut sort uniq wc tr cat rev nl column

@@ -1,0 +1,12 @@
+# Allowed Bash prefixes for the calendar creator — Calendar read + INSERT only.
+# No delete/update (delete stays denied in settings.json too). No Gmail access.
+gws calendar events insert
+gws calendar events quickAdd
+gws calendar events list
+gws calendar events get
+gws calendar +insert
+gws calendar calendarList list
+gws schema
+
+# Read-only filter pipes permitted by bash-guard:
+#   jq grep head tail cut sort uniq wc tr cat rev nl column

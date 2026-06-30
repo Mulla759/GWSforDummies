@@ -1,0 +1,16 @@
+# Allowed Bash prefixes for the orchestrator ITSELF.
+#
+# Enforcement is now a single GLOBAL hook (settings.json) that dispatches by the
+# payload's `agent_type` to the matching <agent>.allowlist. So each agent is
+# governed ONLY by its own file — no stacking, no superset. This list therefore
+# needs to cover only what the orchestrator runs directly: inbox DISCOVERY.
+# Everything else (reads, labels, filters, modifications) is delegated to
+# subagents, each gated by its own allowlist.
+gws gmail users messages list
+gws gmail users threads list
+gws schema
+
+# Pipelines into these read-only filters are also permitted by bash-guard
+# (safe read-only filters, enforced in bash-guard.py SAFE_FILTERS):
+#   jq grep head tail cut sort uniq wc tr cat rev nl column
+# e.g.  gws gmail users messages get --params '{...}' | jq '.payload.headers'

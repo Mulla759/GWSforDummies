@@ -1,0 +1,10 @@
+# Keep shell scripts LF so they run on macOS/Linux even when authored on Windows.
+*.sh        text eol=lf
+bin/gws-do  text eol=lf
+setup.sh    text eol=lf
+*.py        text eol=lf
+# Windows batch wrappers must stay CRLF.
+*.cmd       text eol=crlf
+# Don't touch these.
+*.json      text
+*.md        text

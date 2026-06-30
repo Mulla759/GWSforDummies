@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# gws-do — top-level command interface for GWS automations.
+#
+#   gws-do "<what you want>"          describe a goal; it gets routed + run
+#   gws-do --list                     list available actions
+#   gws-do --status                   show harness + gws auth readiness
+#   gws-do --action <id> "<goal>"     skip routing, run a specific action
+#   gws-do --dry-run "<goal>"         show the routing decision, run nothing
+#   gws-do --help
+#
+# Harness-agnostic: routing + agent execution go through a swappable adapter in
+# harness/ (default: Claude Code). The local `gws` CLI is the shared engine all
+# actions use. Add a new automation by dropping a manifest in actions/.
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; export ROOT
+# Make gws + jq resolvable from non-login shells (mac + windows), like the scripts do.
+if [ -n "${HOME:-}" ] && [ -d "$HOME/AppData/Roaming/npm" ]; then
+  export PATH="$HOME/AppData/Roaming/npm:$HOME/AppData/Local/Microsoft/WinGet/Links:$PATH"
+fi
+# shellcheck disable=SC1091
+source "$ROOT/orchestrator/router.sh"
+load_harness 2>/dev/null || true
+
+usage() { sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+
+cmd_list() {
+  printf "Available actions (add more by dropping a manifest in actions/):\n\n"
+  registry_catalog | jq -r '.[] | "  \(.id)  [\(.kind)]\n    \(.title)\n    \(.description)\n"'
+}
+
+cmd_status() {
+  echo "Harness : ${HARNESS:-?}  ($(harness_name 2>/dev/null || echo 'adapter missing'))"
+  if harness_check 2>/dev/null; then echo "          ready"; else echo "          NOT ready (see harness/${HARNESS}.sh)"; fi
+  printf "gws auth: "
+  if command -v gws >/dev/null 2>&1; then
+    local am; am=$(gws auth status 2>/dev/null | jq -r '.auth_method // "none"' 2>/dev/null)
+    case "$am" in
+      oauth2|service_account|token) echo "authenticated ($am)";;
+      *) echo "not authenticated — run: gws auth login -s \"gmail,tasks,calendar\"";;
+    esac
+  else echo "gws CLI not found"; fi
+  echo "Actions : $(registry_catalog | jq 'length') registered"
+}
+
+main() {
+  [ $# -eq 0 ] && { usage; exit 0; }
+  case "$1" in
+    -h|--help) usage; exit 0;;
+    --list|-l) cmd_list; exit 0;;
+    --status)  cmd_status; exit 0;;
+    --action|-a) FORCE_ACTION="${2:-}"; shift 2;;
+    --dry-run) DRY=1; shift;;
+  esac
+
+  local goal="$*"
+  [ -z "$goal" ] && { echo "gws-do: describe a goal, e.g.  gws-do \"triage my inbox\"" >&2; exit 2; }
+
+  local id; id="$(route_goal "$goal")"
+  [ -z "$id" ] && { echo "gws-do: could not route that goal. Try: gws-do --list" >&2; exit 1; }
+
+  echo ">> $goal"
+  echo ">> routed to: $id — $(registry_field "$id" title)"
+  if [ "${DRY:-0}" = "1" ]; then echo "(dry-run: not executing)"; exit 0; fi
+  dispatch "$id" "$goal"
+}
+main "$@"

@@ -1,0 +1,79 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gws gmail +read:*)",
+      "Bash(gws gmail +triage:*)",
+      "Bash(gws gmail users labels create:*)",
+      "Bash(gws gmail users labels delete:*)",
+      "Bash(gws gmail users labels list:*)",
+      "Bash(gws gmail users labels patch:*)",
+      "Bash(gws gmail users messages get:*)",
+      "Bash(gws gmail users messages list:*)",
+      "Bash(gws gmail users messages modify:*)",
+      "Bash(gws gmail users messages batchModify:*)",
+      "Bash(gws gmail users settings filters get:*)",
+      "Bash(gws gmail users settings filters list:*)",
+      "Bash(gws gmail users threads get:*)",
+      "Bash(gws gmail users threads list:*)",
+      "Bash(gws gmail users threads modify:*)",
+      "Bash(gws tasks tasks insert:*)",
+      "Bash(gws tasks tasks list:*)",
+      "Bash(gws tasks tasks get:*)",
+      "Bash(gws tasks tasklists list:*)",
+      "Bash(gws tasks tasklists get:*)",
+      "Bash(gws calendar events insert:*)",
+      "Bash(gws calendar events quickAdd:*)",
+      "Bash(gws calendar events list:*)",
+      "Bash(gws calendar events get:*)",
+      "Bash(gws calendar +insert:*)",
+      "Bash(gws calendar +agenda:*)",
+      "Bash(gws calendar calendarList list:*)",
+      "Bash(gws workflow +email-to-task:*)",
+      "Bash(gws schema:*)",
+      "Bash(gws auth status:*)",
+      "Bash(jq:*)",
+      "Bash(grep:*)",
+      "Bash(egrep:*)",
+      "Bash(fgrep:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(cut:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(wc:*)",
+      "Bash(tr:*)",
+      "Bash(cat:*)",
+      "Bash(rev:*)",
+      "Bash(nl:*)",
+      "Bash(column:*)",
+      "WebSearch"
+    ],
+    "ask": [
+      "Bash(gws gmail users settings filters create:*)"
+    ],
+    "deny": [
+      "Bash(gws gmail users messages send:*)",
+      "Bash(gws gmail users messages trash:*)",
+      "Bash(gws gmail users messages delete:*)",
+      "Bash(gws gmail users messages batchDelete:*)",
+      "Bash(gws gmail users drafts send:*)",
+      "Bash(gws gmail +send:*)",
+      "Bash(gws gmail +reply:*)",
+      "Bash(gws gmail +reply-all:*)",
+      "Bash(gws gmail +forward:*)",
+      "Bash(gws * send:*)",
+      "Bash(gws * trash:*)",
+      "Bash(gws * delete:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 .claude/hooks/bash-guard.py" }
+        ]
+      }
+    ]
+  }
+}

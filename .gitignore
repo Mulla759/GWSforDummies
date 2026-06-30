@@ -1,0 +1,45 @@
+# Credentials & secrets
+*.json.bak
+creds.json
+credentials.json
+token.json
+client_secret*.json
+*.pem
+*.key
+.env
+.env.*
+
+# State files with potentially sensitive scheduling data
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+._*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Claude Code local state (user-specific)
+.claude/todos/
+.claude/settings.local.json
+
+# npx skills add writes a redundant generic copy here; Claude Code uses .claude/skills/
+.agents/

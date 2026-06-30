@@ -1,0 +1,8 @@
+# Allowed Bash prefixes for the security analyzer
+gws gmail users messages get
+gws gmail +read
+gws schema
+# Pipelines into these read-only filters are also permitted by bash-guard
+# (safe read-only filters, enforced in bash-guard.py SAFE_FILTERS):
+#   jq grep head tail cut sort uniq wc tr cat rev nl column
+# e.g.  gws gmail users messages get --params '{...}' | jq '.payload.headers'

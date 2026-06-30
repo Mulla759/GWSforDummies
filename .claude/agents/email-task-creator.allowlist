@@ -1,0 +1,12 @@
+# Allowed Bash prefixes for the task creator — Google Tasks read + INSERT only.
+# No delete/clear (those stay denied in settings.json too). No Gmail access.
+gws tasks tasks insert
+gws tasks tasks list
+gws tasks tasks get
+gws tasks tasklists list
+gws tasks tasklists get
+gws workflow +email-to-task
+gws schema
+
+# Read-only filter pipes permitted by bash-guard:
+#   jq grep head tail cut sort uniq wc tr cat rev nl column
