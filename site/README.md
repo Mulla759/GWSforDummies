@@ -5,6 +5,7 @@ framework and no build step: Vercel serves the files exactly as they are.
 
 - `index.html` — the one-page manual (semantic HTML).
 - `styles.css` — the paper design system (no framework, no external fonts).
+- `flow.css` + `flow.js` — the AgenticFlowFigure (the page's one signature animation).
 - `site.js` — progressive enhancement only (copy feedback, active nav, reveal, progress).
 - `assets/avatar.jpg` — the contact portrait (local, optimized).
 - `llms.txt` — the agent-readable setup runbook (the key file at `/llms.txt`).

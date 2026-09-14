@@ -1,0 +1,307 @@
+/*
+  flow.css — the AgenticFlowFigure: the page's one signature animation.
+  All visuals are static in index.html (aria-hidden SVG); flow.js sets
+  [data-phase] (transient) and is-* milestone classes (persistent), and this
+  stylesheet renders every change. No libraries, no canvas, reduced-motion safe.
+
+  Arming: `.flow.is-armed` (added by flow.js only when motion is allowed) hides
+  the "not yet" states. Without JS, or under prefers-reduced-motion, the figure
+  renders its completed state statically.
+*/
+
+.flow {
+  position: relative;
+  margin: clamp(40px, 6vw, 72px) 0;
+  padding: 18px;
+  background: var(--paper-subtle);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.flow__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.flow__cap {
+  margin-top: 12px;
+  max-width: 68ch;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* Replay control */
+.flow__replay {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 2;
+  padding: 5px 9px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1;
+  transition: color 160ms ease-out, border-color 160ms ease-out;
+}
+
+.flow__replay:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* SVG text */
+.flow__msg,
+.flow__node-title,
+.flow__result,
+.flow__check,
+.flow__audit-text,
+.flow__tip text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.flow__msg,
+.flow__node-title,
+.flow__result,
+.flow__check,
+.flow__audit-text {
+  font-size: 12px;
+}
+
+.flow__msg,
+.flow__result,
+.flow__audit-text {
+  fill: var(--ink);
+}
+
+.flow__node-title {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+.flow__check {
+  fill: var(--accent);
+}
+
+/* Boxes and connections */
+.flow__box,
+.flow__orch-box {
+  fill: var(--paper);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.flow__dot {
+  fill: var(--accent);
+}
+
+.flow__paths path {
+  stroke: var(--line);
+}
+
+.flow__log-line {
+  stroke: var(--line);
+  stroke-dasharray: 164;
+  stroke-dashoffset: 0;
+}
+
+/* Arming: hide the "not yet" states only when motion is allowed */
+.flow.is-armed .flow__queue .flow__item > * {
+  opacity: 0;
+}
+
+.flow.is-armed .flow__result,
+.flow.is-armed .flow__check {
+  opacity: 0;
+}
+
+.flow.is-armed .flow__log-line {
+  stroke-dashoffset: 164;
+}
+
+.flow.is-armed .flow__audit-rule {
+  stroke-dashoffset: 846;
+}
+
+.flow.is-armed .flow__audit-text {
+  opacity: 0;
+}
+
+/* Packets are motion-only decoration */
+.flow__packet {
+  fill: var(--accent);
+  opacity: 0;
+}
+
+/* Wake */
+.flow.is-wake .flow__svg {
+  animation: flowWake 700ms ease-out;
+}
+
+@keyframes flowWake {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+
+/* Queue trickle */
+.flow.is-ingest .flow__queue .flow__item > * {
+  animation: flowIn 220ms ease-out forwards;
+}
+
+.flow.is-ingest .flow__queue .flow__item:nth-child(1) > * { animation-delay: 0ms; }
+.flow.is-ingest .flow__queue .flow__item:nth-child(2) > * { animation-delay: 200ms; }
+.flow.is-ingest .flow__queue .flow__item:nth-child(3) > * { animation-delay: 400ms; }
+
+@keyframes flowIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Orchestrator read */
+.flow__orch-box {
+  transition: stroke 200ms ease-out, stroke-opacity 200ms ease-out;
+}
+
+.flow.is-classify .flow__orch-box {
+  stroke: var(--accent);
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+}
+
+.flow.is-classify .flow__log-line {
+  animation: flowDraw 420ms ease-out forwards;
+}
+
+.flow.is-classify .flow__orch .flow__log-line:nth-of-type(2) {
+  animation-delay: 180ms;
+}
+
+@keyframes flowDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Specialist routing */
+.flow__specialists .flow__box {
+  transition: stroke 180ms ease-out, stroke-opacity 180ms ease-out;
+}
+
+.flow.is-route-label [data-spec="label"] .flow__box,
+.flow.is-route-task [data-spec="task"] .flow__box,
+.flow.is-route-calendar [data-spec="calendar"] .flow__box {
+  stroke: var(--accent);
+  stroke-opacity: 0.65;
+  stroke-width: 1.5;
+}
+
+/* Produce */
+.flow__result,
+.flow__check {
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+
+.flow.is-produce .flow__result,
+.flow.is-produce .flow__check {
+  opacity: 1;
+}
+
+.flow.is-produce .flow__specialists [data-spec="task"] .flow__result,
+.flow.is-produce .flow__specialists [data-spec="task"] .flow__check {
+  transition-delay: 120ms;
+}
+
+.flow.is-produce .flow__specialists [data-spec="calendar"] .flow__result,
+.flow.is-produce .flow__specialists [data-spec="calendar"] .flow__check {
+  transition-delay: 240ms;
+}
+
+/* Packets */
+.flow.is-ingest .flow__packet[data-packet="i1"] { animation: pktI1 620ms linear forwards; }
+.flow.is-ingest .flow__packet[data-packet="i2"] { animation: pktI2 620ms linear 180ms forwards; }
+.flow.is-ingest .flow__packet[data-packet="i3"] { animation: pktI3 620ms linear 360ms forwards; }
+.flow.is-route-label .flow__packet[data-packet="rl"] { animation: pktRl 620ms linear forwards; }
+.flow.is-route-task .flow__packet[data-packet="rt"] { animation: pktRt 620ms linear forwards; }
+.flow.is-route-calendar .flow__packet[data-packet="rc"] { animation: pktRc 620ms linear forwards; }
+
+@keyframes pktI1 { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(90px, 87px); } }
+@keyframes pktI2 { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(90px, 17px); } }
+@keyframes pktI3 { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(90px, -53px); } }
+@keyframes pktRl { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(80px, -87px); } }
+@keyframes pktRt { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(80px, -17px); } }
+@keyframes pktRc { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(80px, 53px); } }
+
+/* Audit */
+.flow__audit-rule {
+  stroke: var(--line);
+  stroke-dasharray: 846;
+  stroke-dashoffset: 0;
+}
+
+.flow__audit-text {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+
+.flow.is-audit .flow__audit-rule {
+  animation: flowDraw 600ms ease-out forwards;
+}
+
+.flow.is-audit .flow__audit-text {
+  opacity: 1;
+  transition-delay: 520ms;
+}
+
+/* Tooltips */
+.flow__tip {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms ease-out;
+}
+
+.flow__tip rect {
+  fill: var(--paper);
+  stroke: var(--line);
+}
+
+.flow__tip text {
+  fill: var(--ink);
+  font-size: 11px;
+}
+
+.flow[data-phase="ingest"] .flow__tip[data-tip="found"],
+.flow[data-phase="classify"] .flow__tip[data-tip="read"],
+.flow[data-phase="route-label"] .flow__tip[data-tip="finance"],
+.flow[data-phase="route-task"] .flow__tip[data-tip="invoice"],
+.flow[data-phase="route-calendar"] .flow__tip[data-tip="meeting"],
+.flow[data-phase="audit"] .flow__tip[data-tip="safety"],
+.flow[data-phase="complete"] .flow__tip[data-tip="safety"] {
+  opacity: 1;
+  transform: none;
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+/* Reduced motion: no movement, show the resolved state statically */
+@media (prefers-reduced-motion: reduce) {
+  .flow *,
+  .flow *::before,
+  .flow *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .flow__packet {
+    display: none;
+  }
+}
+
+/* Paused (document hidden, or figure scrolled out of view mid-run) */
+.flow.is-paused,
+.flow.is-paused *,
+.flow.is-paused *::before,
+.flow.is-paused *::after {
+  animation-play-state: paused !important;
+}

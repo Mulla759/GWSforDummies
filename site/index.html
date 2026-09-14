@@ -15,6 +15,7 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232457d6'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' fill='%23fbfbf8' text-anchor='middle'%3Eg%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="flow.css">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -120,22 +121,88 @@
           <a class="feature__action" href="https://github.com/Mulla759/GWSforDummies/blob/master/actions/gmail-actions.json" target="_blank" rel="noopener noreferrer">See what gets created&nbsp;&#8599;</a>
         </article>
 
-        <figure class="media media--editorial" data-reveal aria-hidden="true">
-          <svg class="editorial" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <rect width="1200" height="420" fill="#f4f4ef"/>
-            <g fill="none" stroke="#cfcfc6" stroke-width="2">
-              <rect x="150" y="196" width="360" height="60" rx="6"/>
-              <rect x="150" y="126" width="360" height="60" rx="6"/>
-              <rect x="150" y="56" width="360" height="60" rx="6"/>
-              <path d="M540 86 h360 M540 156 h300 M540 226 h220" stroke-width="3" stroke-linecap="round"/>
-              <rect x="960" y="56" width="180" height="200" rx="10"/>
-              <path d="M1000 106 h100 M1000 146 h100 M1000 186 h60" stroke-width="3" stroke-linecap="round"/>
+        <figure class="flow" data-flow data-phase="idle" aria-labelledby="flow-cap">
+          <button class="flow__replay" type="button" data-flow-replay>Replay flow</button>
+          <svg class="flow__svg" viewBox="0 0 878 307" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+            <g class="flow__paths" fill="none" stroke-width="1">
+              <path d="M250 67 L340 154"/>
+              <path d="M250 137 L340 154"/>
+              <path d="M250 207 L340 154"/>
+              <path d="M540 154 L620 67"/>
+              <path d="M540 154 L620 137"/>
+              <path d="M540 154 L620 207"/>
             </g>
-            <g fill="#2457d6">
-              <rect x="130" y="70" width="8" height="8"/><rect x="130" y="140" width="8" height="8"/><rect x="130" y="210" width="8" height="8"/>
+
+            <g class="flow__queue">
+              <g class="flow__item">
+                <rect class="flow__box" x="16" y="40" width="234" height="54" rx="6"/>
+                <rect class="flow__dot" x="28" y="63" width="8" height="8"/>
+                <text class="flow__msg" x="48" y="72">Invoice received</text>
+              </g>
+              <g class="flow__item">
+                <rect class="flow__box" x="16" y="110" width="234" height="54" rx="6"/>
+                <rect class="flow__dot" x="28" y="133" width="8" height="8"/>
+                <text class="flow__msg" x="48" y="142">Action required</text>
+              </g>
+              <g class="flow__item">
+                <rect class="flow__box" x="16" y="180" width="234" height="54" rx="6"/>
+                <rect class="flow__dot" x="28" y="203" width="8" height="8"/>
+                <text class="flow__msg" x="48" y="212">Meeting moved</text>
+              </g>
             </g>
-            <path d="M740 300 q60 40 140 0 t160 0" fill="none" stroke="#e3e3dc" stroke-width="3"/>
+
+            <g class="flow__orch">
+              <rect class="flow__orch-box" x="340" y="96" width="200" height="116" rx="8"/>
+              <text class="flow__node-title" x="440" y="122" text-anchor="middle">triage orchestrator</text>
+              <line class="flow__log-line" x1="358" y1="152" x2="522" y2="152"/>
+              <line class="flow__log-line" x1="358" y1="176" x2="522" y2="176"/>
+            </g>
+
+            <g class="flow__specialists">
+              <g class="flow__item" data-spec="label">
+                <rect class="flow__box" x="620" y="40" width="242" height="54" rx="6"/>
+                <text class="flow__node-title" x="636" y="64">label agent</text>
+                <text class="flow__result" data-result="label" x="636" y="82">Finance</text>
+                <text class="flow__check" x="848" y="82" text-anchor="end">&#10003;</text>
+              </g>
+              <g class="flow__item" data-spec="task">
+                <rect class="flow__box" x="620" y="110" width="242" height="54" rx="6"/>
+                <text class="flow__node-title" x="636" y="134">task agent</text>
+                <text class="flow__result" data-result="task" x="636" y="152">Reply to invoice &middot; Fri</text>
+                <text class="flow__check" x="848" y="152" text-anchor="end">&#10003;</text>
+              </g>
+              <g class="flow__item" data-spec="calendar">
+                <rect class="flow__box" x="620" y="180" width="242" height="54" rx="6"/>
+                <text class="flow__node-title" x="636" y="204">calendar agent</text>
+                <text class="flow__result" data-result="calendar" x="636" y="222">Tue &middot; 10:00</text>
+                <text class="flow__check" x="848" y="222" text-anchor="end">&#10003;</text>
+              </g>
+            </g>
+
+            <g class="flow__audit">
+              <line class="flow__audit-rule" x1="16" y1="284" x2="862" y2="284"/>
+              <text class="flow__audit-text" x="16" y="301">&#10003; nothing sent, trashed, or deleted</text>
+            </g>
+
+            <g class="flow__packets">
+              <rect class="flow__packet" data-packet="i1" x="246" y="63" width="8" height="8"/>
+              <rect class="flow__packet" data-packet="i2" x="246" y="133" width="8" height="8"/>
+              <rect class="flow__packet" data-packet="i3" x="246" y="203" width="8" height="8"/>
+              <rect class="flow__packet" data-packet="rl" x="536" y="150" width="8" height="8"/>
+              <rect class="flow__packet" data-packet="rt" x="536" y="150" width="8" height="8"/>
+              <rect class="flow__packet" data-packet="rc" x="536" y="150" width="8" height="8"/>
+            </g>
+
+            <g class="flow__tips">
+              <g transform="translate(16,6)"><g class="flow__tip" data-tip="found"><rect width="150" height="22" rx="6"/><text x="8" y="15">24 messages found</text></g></g>
+              <g transform="translate(340,64)"><g class="flow__tip" data-tip="read"><rect width="188" height="22" rx="6"/><text x="8" y="15">Reading sender + intent&hellip;</text></g></g>
+              <g transform="translate(560,8)"><g class="flow__tip" data-tip="finance"><rect width="168" height="22" rx="6"/><text x="8" y="15">Finance &rarr; label agent</text></g></g>
+              <g transform="translate(620,78)"><g class="flow__tip" data-tip="invoice"><rect width="160" height="22" rx="6"/><text x="8" y="15">Invoice &rarr; task agent</text></g></g>
+              <g transform="translate(620,148)"><g class="flow__tip" data-tip="meeting"><rect width="178" height="22" rx="6"/><text x="8" y="15">Meeting &rarr; calendar agent</text></g></g>
+              <g transform="translate(360,248)"><g class="flow__tip" data-tip="safety"><rect width="150" height="22" rx="6"/><text x="8" y="15">Safety check passed</text></g></g>
+            </g>
           </svg>
+          <figcaption class="flow__cap" id="flow-cap">Illustrative flow &mdash; messages are classified, routed to specialist agents, and checked before changes are made.</figcaption>
         </figure>
 
         <article class="feature" data-reveal>
@@ -255,5 +322,6 @@
 
 <div id="copy-live" class="sr-only" role="status" aria-live="polite"></div>
 <script src="site.js" defer></script>
+<script src="flow.js" defer></script>
 </body>
 </html>

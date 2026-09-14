@@ -8,18 +8,11 @@ The site should feel like a carefully typeset sheet of paper with a useful tool 
 
 **North star:** a small, trustworthy open-source utility presented with the restraint of a personal design studio.
 
-## What is wrong with the current version
+## Starting point
 
-The existing page has useful copy and a clear product, but the presentation weakens it:
+The original page had useful copy and a clear product, but the dark background, glow, blue gradient, pills, and repeated cards made it feel like a generic AI/SaaS template. The redesign has now corrected most of that baseline problem with a paper palette, editorial layout, persistent navigation, embedded documentation, and a human contact surface.
 
-- The dark background, glow, blue gradient, pills, and repeated cards read as “vibe-coded developer landing page.”
-- Every section has similar visual weight, so the page has no editorial rhythm.
-- The card grid fragments a simple story into too many containers.
-- The product feels less personal because there is no persistent identity or contact surface.
-- The site explains features, but does not visually demonstrate the calm outcome of using them.
-- The page has no clear navigation or embedded documentation path.
-
-Keep the product promise and safety language. Replace the visual system and information hierarchy.
+Do not regress to the old visual language while adding polish. The remaining work is about making the product behavior feel alive and tightening the new system.
 
 ## Reference synthesis
 
@@ -33,6 +26,50 @@ Use the references as a system, not as pages to clone.
 | [Jay Suthar](https://sutharjay.com/) | Short functional labels, plain-spoken links, small editorial image moments | A bare list with too little product explanation |
 | [Paul Faivret](https://www.paulfaivret.com/) | Primary page flow: statement → explanation → large visual → repeat; thin dividers; broad media frames | Portfolio carousels or excessive project length |
 | [Abdullahi’s Gravatar](https://gravatar.com/tremendousdelectablye2bab3e728) | Profile image and verified identity details for the contact area | The Gravatar card styling |
+
+## Current live iteration audit — September 14, 2026
+
+**Overall grade: 8.3 / 10**
+
+This is a strong redesign and a large improvement over the original. The grade is based on a live desktop inspection of `https://gws-for-dummies.vercel.app/` plus the supplied workflow-visual frame. It is a design/implementation review, not a complete Lighthouse or device-lab audit.
+
+| Area | Grade | Assessment |
+| --- | ---: | --- |
+| Visual direction | `9.0` | The warm paper canvas, ink typography, thin lines, and limited blue accent feel intentional and much more elegant. |
+| Hierarchy and copy | `8.8` | The hero communicates the outcome quickly, and the safety promise is unusually clear. |
+| Navigation | `8.7` | The sticky rail is simple and useful. The blue square active state fits the system. |
+| Feature presentation | `8.2` | The stacked rows and proof tables are clearer than the old card grid, though several rows still feel structurally similar. |
+| Product storytelling | `7.2` | The terminal proof helps, but the larger abstract workflow graphic does not yet explain how messages move through the agents. |
+| Motion and interaction | `6.8` | Copy and hover states are present, but the page has no memorable product-behavior moment yet. Existing `500ms` entrance transitions can also feel slower than the rest of the interface. |
+| Accessibility and trust | `8.8` | Skip navigation, semantic headings, visible safety language, copy feedback, and portrait alt text are strong. The explanatory workflow still needs an accessible static description. |
+| Performance discipline | `8.5` | The page is visually light and avoids animation libraries. Final scoring still needs a production Lighthouse run and mobile verification. |
+
+### What is working now
+
+- The site no longer looks “vibe coded.” It has a coherent design opinion.
+- The hero is confident without relying on decorative imagery.
+- The left rail gives the page an identity and keeps Docs and Contact reachable.
+- The command row makes the first action obvious.
+- Feature labels such as `PREDICTABLE`, `UNDOABLE`, `READ-ONLY`, and `IDEMPOTENT` build trust efficiently.
+- The feature tables feel like product evidence rather than marketing cards.
+- The Docs and Contact sections complete the story on one route.
+- The restrained blue square is becoming a useful motion and state motif.
+
+### What still holds it back
+
+1. **The workflow visual is too abstract.** The pale boxes and lines match the palette, but they currently look like a loading skeleton. A visitor cannot tell what is moving, who is acting, or what was produced.
+2. **The page needs one signature interaction.** The animation described below should become that moment. Do not add motion everywhere else.
+3. **Some vertical gaps are slightly overextended.** Keep the editorial breathing room, but tighten the gap before `What it does` and before `Docs` by roughly `24–40px` if the page still feels slow after the workflow animation is added.
+4. **Deep-linked section positioning needs verification.** Loading `#features` can leave the section heading too low in the first viewport. Apply a consistent `scroll-margin-top` and test direct hash loads.
+5. **Entrance transitions are a little long.** Reduce generic reveal motion from `500ms` to about `320–380ms`; reserve the longer timeline only for the explanatory workflow.
+6. **Arrow semantics should be consistent.** Use `↗` only for external destinations. Use `↓`, `→`, or no arrow for in-page links.
+
+### Highest-priority next pass
+
+1. Replace the static workflow placeholder with the agentic trickle animation below.
+2. Fix direct anchor positioning and verify the active rail state on load.
+3. Shorten generic reveal transitions.
+4. Run mobile, keyboard, reduced-motion, and Lighthouse checks.
 
 ## Core design principles
 
@@ -141,6 +178,140 @@ Preferred content, in order:
 3. Only if product imagery is unavailable, use a restrained editorial stock image of a calm desk, paper inbox, or organized work surface.
 
 The frame should be approximately `16:9`, softly rounded (`10–12px`), and should not have a fake browser chrome, neon glow, or heavy shadow. Add a small caption beneath it.
+
+### 3A. Signature agentic trickle animation
+
+Use the supplied pale workflow frame as the location and visual base for one restrained animation. This is the only complex motion moment on the page.
+
+#### What the animation should communicate
+
+A few messages enter a queue. The orchestrator reads each one, decides what it means, and hands it to the correct specialist. The specialists produce a label, a Task, or a Calendar event. The sequence ends by confirming that nothing was sent or deleted.
+
+The visitor should understand the system without reading the surrounding paragraph:
+
+```text
+incoming messages → triage orchestrator → label agent / task agent / calendar agent → audited result
+```
+
+This is a product explanation, not an abstract loading animation.
+
+#### Composition
+
+Keep the existing rounded paper frame and thin-line language.
+
+- **Left third — inbox queue:** three stacked message rows. Use short believable subjects such as `Invoice received`, `Action required`, and `Meeting moved`.
+- **Center — orchestrator:** one narrow rectangular node labeled `triage orchestrator`. It may contain a tiny two-line activity log.
+- **Right third — specialist outputs:** three quiet rectangular destinations labeled `label agent`, `task agent`, and `calendar agent`.
+- **Bottom edge — audit line:** a single status row that ends with `✓ nothing sent, trashed, or deleted`.
+- Connect areas with thin `--line` paths. Use the blue square as the moving data packet. Do not add circles, robot avatars, dotted particle clouds, or branching neon lines.
+
+The diagram should remain approximately `878 × 307px` in the current desktop content area. Implement it responsively with an SVG `viewBox`, not hard-coded viewport pixels.
+
+#### Text pop-ups
+
+Show small paper tooltips as the agents work. These are the important storytelling layer.
+
+Use a maximum of two at once:
+
+```text
+24 messages found
+Reading sender + intent…
+Finance → label agent
+Invoice → task agent
+Meeting → calendar agent
+Safety check passed
+```
+
+Tooltip styling:
+
+- `11–12px` monospace.
+- `--paper` background, `1px solid var(--line)`, `6px` radius.
+- Small `6px 8px` padding.
+- No heavy shadow; use at most `0 4px 14px rgb(0 0 0 / 0.05)`.
+- Enter with opacity plus `translateY(4px)`; exit with opacity only.
+- Never scale, bounce, blur, or float continuously.
+
+#### Storyboard and timing
+
+Run the sequence once when at least 35% of the figure enters the viewport. Total duration should be about `8.4 seconds`.
+
+| Time | Phase | Motion and copy |
+| ---: | --- | --- |
+| `0.0–0.7s` | Wake | The frame fades from `0.75` to full opacity. The first blue square appears beside the inbox queue. |
+| `0.7–2.0s` | Trickle in | Three message rows arrive one at a time, `180–240ms` apart. Small blue squares travel toward the orchestrator. Show `24 messages found`. |
+| `2.0–3.2s` | Read | The orchestrator border changes from `--line` to a low-opacity blue. Its two activity lines fill from left to right. Show `Reading sender + intent…`. |
+| `3.2–5.8s` | Route | Route the three examples one at a time. Each blue square follows one path to the correct specialist while the matching pop-up appears: `Finance → label agent`, `Invoice → task agent`, then `Meeting → calendar agent`. |
+| `5.8–7.1s` | Produce | Each destination reveals a compact result: `Finance`, `Reply to invoice · Fri`, and `Tue · 10:00`. Use a tiny blue square/check as confirmation. |
+| `7.1–8.4s` | Audit | Draw the bottom rule from left to right and reveal `✓ nothing sent, trashed, or deleted`. Hold on this completed state. |
+
+Do **not** loop automatically. The final resolved state is the most informative state, so leave it visible. Add a small `Replay flow` text button in the upper-right corner of the figure for anyone who wants to see it again.
+
+#### Motion behavior
+
+- Use ease-out for entrances and a near-linear curve for packets traveling along paths.
+- Packet travel: `520–700ms` per route.
+- Tooltip transition: `160ms`.
+- Node activation: `180–220ms`.
+- Audit-line draw: `500–650ms`.
+- Pause the animation when the document is hidden.
+- If the figure leaves the viewport mid-run, pause it; resume when visible rather than restarting.
+- Clicking `Replay flow` resets to the initial frame and starts the sequence again.
+- Do not tie progress to page scroll. Scroll-scrubbing will make the explanation harder to follow.
+
+#### Implementation direction
+
+Use an inline SVG plus a very small state controller. Do not use Canvas, video, GIF, Lottie, GSAP, or Framer Motion.
+
+Recommended component:
+
+```text
+AgenticFlowFigure
+├── InboxQueue
+├── OrchestratorNode
+├── RoutePaths
+├── SpecialistNodes
+├── StatusPopups
+├── AuditLine
+└── ReplayButton
+```
+
+Use one root state value:
+
+```text
+idle → ingest → classify → route-label → route-task → route-calendar → audit → complete
+```
+
+Implementation rules:
+
+- Render the entire semantic figure on the server; JavaScript only advances `data-phase` on the root.
+- Use `IntersectionObserver` with a threshold near `0.35` to start once.
+- Use one ordered array of phase durations rather than scattered independent timers.
+- Clean up every timer and observer on unmount.
+- Drive SVG and tooltip changes from `[data-phase="..."]` selectors and CSS transitions.
+- For curved paths, animate small square packets with SVG `<animateMotion>` or a short Web Animations API routine. Keep all orchestration local to this component.
+- Never generate random positions or timings. The sequence must be deterministic.
+- Keep the added client-side code small; the animation must not become the largest JavaScript feature on the page.
+- Add a static caption below the figure: `Illustrative flow — messages are classified, routed to specialist agents, and checked before changes are made.`
+
+#### Reduced-motion and accessibility behavior
+
+- The animated SVG is `aria-hidden="true"` because its movement and repeated text should not be announced.
+- The `<figure>` receives an accessible description that explains the complete flow in one sentence.
+- Do not send each phase through `aria-live`; that would repeatedly interrupt screen-reader users.
+- Under `prefers-reduced-motion: reduce`, skip the timeline and immediately display the completed state with all three results and the safety check visible.
+- Keep `Replay flow` keyboard reachable, with a visible focus ring and an accessible name.
+- Do not rely on color alone. Active agents also gain a label/check or stronger line weight.
+
+#### Animation acceptance criteria
+
+- A first-time visitor can correctly describe that email is classified and routed to label, Task, and Calendar specialists.
+- The animation runs only when visible and does not loop endlessly.
+- No more than two pop-ups are present simultaneously.
+- The final state remains readable indefinitely.
+- The frame still feels like the surrounding white-paper site.
+- No layout shift occurs when the animation starts.
+- Reduced-motion users receive the same information without movement.
+- The added animation does not drop the production Lighthouse Performance score below `95`.
 
 ### 4. What it does
 
@@ -326,6 +497,8 @@ The site should feel spacious because of proportion, not because every element i
 - Buttons: 1px translate or subtle background change; no scale bounce.
 - Copy controls: immediate label swap with a small check mark.
 - Images may fade/translate up by no more than `8px` once when entering the viewport.
+- Generic reveal transitions should finish in `320–380ms`; do not reuse the workflow animation’s longer timing elsewhere.
+- The agentic trickle figure may run for about `8.4s` because it explains a sequence, but it runs once and then stays resolved.
 - No parallax, cursor-following effects, auto-playing carousel, particle canvas, or animation library.
 - Respect `prefers-reduced-motion: reduce` and make the page fully usable with motion disabled.
 - Anchor navigation should use smooth scrolling only when reduced motion is not requested.
@@ -339,6 +512,7 @@ Page
 ├── SideRail / MobileHeader
 ├── Hero
 ├── CopyRow
+├── AgenticFlowFigure
 ├── FeatureList
 │   └── FeatureSection × 4
 ├── DocsQuickstart
@@ -357,7 +531,7 @@ Suggested data separation:
 ## Performance requirements
 
 - Keep the landing page static whenever the framework permits.
-- Use client-side JavaScript only for active-section tracking and clipboard feedback.
+- Use client-side JavaScript only for active-section tracking, clipboard feedback, and the small deterministic controller inside `AgenticFlowFigure`.
 - Do not add Framer Motion or another animation dependency for simple fades.
 - Store and optimize stock images locally as AVIF/WebP.
 - Always specify image width and height to prevent layout shift.
@@ -435,8 +609,9 @@ Performance acceptance targets on a production mobile build:
 
 1. Capture or create the primary product screenshot.
 2. Add no more than two licensed editorial stock images.
-3. Implement the shared copy interaction for setup commands and email.
-4. Add active-section tracking and restrained reveal motion.
+3. Replace the static workflow placeholder with `AgenticFlowFigure` using the storyboard above.
+4. Implement the shared copy interaction for setup commands and email.
+5. Add active-section tracking and restrained reveal motion.
 
 ### Pass 4 — Quality pass
 
@@ -455,6 +630,8 @@ The redesign is complete when:
 - `GWS for Dummies`, `Docs`, and `Contact me` are always easy to reach.
 - Overview, features, docs, and contact are all present on one page and deep-linkable.
 - Feature sections follow a text → proof/media rhythm rather than a card grid.
+- The workflow figure visibly shows messages trickling into an orchestrator, routing to specialist agents, and ending in an audited safety state.
+- The workflow runs once on entry, offers replay, stays readable when complete, and has an equivalent reduced-motion state.
 - Setup and email copy controls provide clear `Copied ✓` feedback.
 - The contact area uses Abdullahi’s Gravatar portrait and verified profile links.
 - Stock imagery is sparse, relevant, licensed, local, responsive, and lazy-loaded.

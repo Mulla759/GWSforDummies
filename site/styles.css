@@ -22,7 +22,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 76px;
+  scroll-padding-top: 92px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -501,7 +501,7 @@ main {
 }
 
 .section {
-  padding-top: clamp(64px, 9vw, 112px);
+  padding-top: clamp(40px, 6.5vw, 80px);
 }
 
 .section__title {
@@ -608,20 +608,6 @@ main {
   color: var(--ink);
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.media--editorial {
-  margin: clamp(40px, 6vw, 72px) 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-}
-
-.editorial,
-svg.editorial {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 .docs__steps {
@@ -789,7 +775,7 @@ svg.editorial {
 .js [data-reveal] {
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 500ms ease-out, transform 500ms ease-out;
+  transition: opacity 340ms ease-out, transform 340ms ease-out;
 }
 
 .js [data-reveal].is-visible {
