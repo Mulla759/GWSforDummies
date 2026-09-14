@@ -43,7 +43,7 @@
 .flow__cap {
   margin-top: 12px;
   max-width: 68ch;
-  color: var(--ink-muted);
+  color: var(--ink);
   font-size: 12.5px;
   line-height: 1.5;
 }
