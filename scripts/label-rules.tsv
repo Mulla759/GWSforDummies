@@ -1,0 +1,33 @@
+# label-rules.tsv — deterministic sender/subject -> Gmail label rules.
+#
+# Normally GENERATED/CURATED from the user's real inbox by the
+# `label-rules-curator` agent. Run scripts/discover-senders.sh first to see the
+# common "email pathways" (top sender domains + subject words), then edit the
+# rows below. This file is plain data: no code and no LLM at run time.
+#
+# Format: TAB-separated, one rule per line, three columns:
+#   <label> <TAB> <from-domains> <TAB> <subject-terms>
+#   * label         : Gmail label to apply. Created automatically by
+#                     scripts/nightly-label.sh if it does not already exist.
+#   * from-domains  : space-separated bare domains, e.g. "chase.com amex.com".
+#                     Use a single "-" when the rule is subject-only.
+#   * subject-terms : a raw Gmail subject expression, already OR-joined and
+#                     quoted where needed, e.g.  "final notice" OR overdue
+#                     Leave empty (or omit) for sender-only rules.
+#   * Lines starting with "#" and blank lines are ignored.
+#   * Domains/terms within a rule are OR-ed. When both a from-domain and subject
+#     terms are present the rule matches sender AND subject.
+#
+# The taxonomy below is a curated DEFAULT with illustrative example senders.
+# Replace the senders with the ones you actually receive before trusting it.
+
+Finance	chase.com bankofamerica.com citibank.com discover.com amex.com ally.com paypal.com venmo.com stripe.com	
+Receipts & Orders	-	receipt OR "order confirmation" OR shipped OR "out for delivery"
+Newsletters	substack.com mailchimp.com beehiiv.com medium.com morningbrew.com	
+Shopping	amazon.com ebay.com etsy.com target.com walmart.com shopify.com	
+Tech & Learning	github.com stackoverflow.com coursera.org udemy.com openai.com notion.so	
+Travel	delta.com united.com airbnb.com booking.com expedia.com amtrak.com	
+Events	eventbrite.com meetup.com calendly.com lu.ma	
+Security	accounts.google.com login.gov	"security alert" OR "unusual sign-in" OR "verify your account"
+Social	linkedin.com facebookmail.com x.com reddit.com	
+Priority	-	"action required" OR "past due" OR overdue OR fraud OR "security alert" OR "unusual sign-in" OR "payment failed" OR "final notice"

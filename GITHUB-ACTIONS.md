@@ -3,6 +3,10 @@
 This runs `scripts/nightly-label.sh` on GitHub's servers every night, so labeling
 happens even when your computer is powered off. Workflow: `.github/workflows/nightly-gmail-label.yml`.
 
+> **Labeling rules:** the job reads `scripts/label-rules.tsv`. Curate it for your own inbox
+> first — run `gws-do --action curate-labels` (or `claude --agent label-rules-curator`) after
+> authenticating. See the README section *How labeling works*.
+
 > **Cost:** free (GitHub Actions free tier easily covers one short nightly run).
 
 ---
@@ -28,12 +32,12 @@ happens even when your computer is powered off. Workflow: `.github/workflows/nig
 
 ### 1. Put this project in a private GitHub repo
 ```powershell
-cd D:\googlecli
+cd <path-to-repo>
 git init
 git add .
 git commit -m "Gmail automation project"
-gh repo create gmail-automation --private --source=. --push
-# (or create a private repo in the GitHub UI and: git remote add origin <url>; git push -u origin main)
+gh repo create gws-for-dummies --private --source=. --push
+# (or create a private repo in the GitHub UI and: git remote add origin <url>; git push -u origin HEAD)
 ```
 
 ### 2. Export your gws credentials (this is the secret value)
@@ -54,9 +58,10 @@ Copy the **entire JSON output**. It contains your refresh token — treat it lik
   `Finance: +N`, etc. If it errors with an auth/scope message, re-check steps 1–3.
 
 ### 5. Done
-It now runs automatically at **~02:00 America/Chicago** nightly (the `cron` line; UTC, so
-it shifts 1h at daylight-saving — edit the cron if you care). The 2-day window means a
-delayed or skipped run is harmless.
+It now runs automatically at the time set by the `cron:` line in the workflow (cron is
+always UTC, so adjust it to your local timezone; note it shifts 1h across daylight-saving
+changes — edit the cron if you care). The 2-day window means a delayed or skipped run is
+harmless.
 
 ---
 

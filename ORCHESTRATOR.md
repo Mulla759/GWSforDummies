@@ -62,7 +62,7 @@ implement the four functions, set `HARNESS=foo`. **Nothing else changes.**
 Anyone can get this exact workflow:
 
 ```bash
-git clone https://github.com/Mulla759/GWSforDummies.git && cd gws
+git clone https://github.com/Mulla759/GWSforDummies.git && cd GWSforDummies
 ./setup.sh                 # installs gws + jq, checks Google auth + AI harness
 gws auth login -s "gmail,tasks,calendar"   # their own Google account (one-time OAuth)
 # bring your own AI credentials for the harness (e.g. Claude login or ANTHROPIC_API_KEY)

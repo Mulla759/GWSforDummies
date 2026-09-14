@@ -1,0 +1,9 @@
+{
+  "id": "curate-labels",
+  "title": "Curate label rules",
+  "description": "After `gws auth`, read the real inbox to map common senders onto a small set of label pathways, create missing labels, and write scripts/label-rules.tsv so the deterministic nightly labeler does the work.",
+  "keywords": ["curate labels", "labeling rules", "map senders", "set up labels", "customize labels", "discover senders", "label taxonomy"],
+  "kind": "agent",
+  "target": "label-rules-curator",
+  "interactive": true
+}

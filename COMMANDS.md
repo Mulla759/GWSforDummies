@@ -47,7 +47,7 @@ gws <service> +<helper> [--flag value]              # hand-written helper, prefi
    PowerShell — ignore the wrapper; the JSON is the result.
 4. **Added a scope but still getting `403 insufficientPermissions`?** A stale access token
    is cached. Delete `~/.config/gws/token_cache.json` (Windows:
-   `C:\Users\adelina\.config\gws\token_cache.json`) and retry — `gws` re-mints a fresh
+   `%USERPROFILE%\.config\gws\token_cache.json`) and retry — `gws` re-mints a fresh
    token from `credentials.enc`, which already holds the new scopes.
 
 ---

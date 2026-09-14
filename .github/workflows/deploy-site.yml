@@ -1,0 +1,52 @@
+name: deploy-site
+
+# Fallback deploy: publishes the static site in site/ to Vercel production.
+# Use this if you'd rather not connect the repo through Vercel's Git integration
+# (Settings -> Git). Vercel's own Git integration is the primary path; this is the
+# token-based fallback.
+#
+# One-time setup:
+#   1. Create a Vercel token at https://vercel.com/account/tokens
+#      (optionally scope it to the gws-for-dummies project).
+#   2. Add it to THIS repo as the secret VERCEL_TOKEN
+#      (Settings -> Secrets and variables -> Actions -> New repository secret).
+#
+# The org/project IDs below are NOT secret — they just identify the Vercel project.
+
+on:
+  push:
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: team_PAM1dONGhoD9SyvEbSJ8MnCl
+      VERCEL_PROJECT_ID: prj_PGwvkuTGsLdxk7SKPsg7qJmizcKS
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy site/ to Vercel (production)
+        working-directory: site
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+
+      - name: Smoke-test the published runbook
+        run: |
+          sleep 3
+          curl -fsSI https://gws-for-dummies.vercel.app/llms.txt | grep -i "content-type"

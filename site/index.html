@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GWS for Dummies — email triage made easy</title>
+<meta name="description" content="A layman-friendly Gmail triage toolkit. Say what you want in plain English and a small team of AI sub-agents drives the Google Workspace CLI against your own account.">
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2230;
+    --border: #2d333b;
+    --text: #e6edf3;
+    --muted: #9aa4b2;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -10%, #17233a 0%, var(--bg) 55%) no-repeat, var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  header.hero { padding: 76px 0 40px; }
+  .badge {
+    display: inline-block;
+    font: 12px/1 var(--mono);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 7px 10px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  h1 .accent { color: var(--accent); }
+  .pitch { font-size: 1.1rem; color: #c9d4e0; margin: 0 0 10px; max-width: 62ch; }
+  .pitch .mono { font-family: var(--mono); font-size: .95em; color: var(--text); background: var(--panel-2); padding: 1px 6px; border-radius: 6px; }
+  section { padding: 26px 0; }
+  h2 { font-size: 1.35rem; margin: 0 0 18px; letter-spacing: -0.01em; }
+
+  .agent-card {
+    border: 1px solid #2b4a78;
+    background: linear-gradient(180deg, #152238 0%, var(--panel) 100%);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.35);
+  }
+  .agent-card h2 { margin: 0 0 4px; }
+  .agent-card p { margin: 0 0 16px; color: var(--muted); font-size: .95rem; }
+  .copyline {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .copyline code {
+    flex: 1 1 320px;
+    font-family: var(--mono);
+    font-size: .95rem;
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    color: var(--accent-2);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  button.copy {
+    font: 600 .95rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #04101f;
+    background: var(--accent);
+    border: 0;
+    border-radius: 10px;
+    padding: 0 20px;
+    min-height: 46px;
+    cursor: pointer;
+    transition: filter .15s ease, transform .05s ease;
+  }
+  button.copy:hover { filter: brightness(1.08); }
+  button.copy:active { transform: translateY(1px); }
+  button.copy.done { background: var(--accent-2); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .card .glyph { font-family: var(--mono); color: var(--accent); font-size: .8rem; display: block; margin-bottom: 8px; }
+
+  pre.code {
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: .9rem;
+    line-height: 1.7;
+    color: #d7e2ee;
+    margin: 0;
+  }
+  pre.code .c { color: var(--muted); }
+  pre.code .g { color: var(--accent-2); }
+
+  .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+  .links a {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: .92rem;
+    color: var(--text);
+  }
+  .links a:hover { border-color: var(--accent); text-decoration: none; }
+  .links a span { color: var(--muted); font-family: var(--mono); font-size: .82rem; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 30px;
+    padding: 26px 0 44px;
+    color: var(--muted);
+    font-size: .88rem;
+  }
+  footer .mono { font-family: var(--mono); }
+
+  @media (max-width: 620px) {
+    h1 { font-size: 1.85rem; }
+    header.hero { padding: 52px 0 24px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <header class="hero">
+    <span class="badge">Gmail &middot; Tasks &middot; Calendar</span>
+    <h1>GWS for Dummies — <span class="accent">email triage made easy</span></h1>
+    <p class="pitch">
+      A layman-friendly Gmail triage toolkit. You type plain English — like
+      <span class="mono">"triage my inbox and label everything"</span> — and a small team of AI
+      sub-agents drives the Google Workspace CLI (<span class="mono">gws</span>) against your own
+      Google account. It labels mail, turns action-required mail into Tasks and Calendar events, and
+      can run a nightly labeler. It reads and labels, but never sends, trashes, or deletes.
+    </p>
+  </header>
+
+  <section>
+    <div class="agent-card">
+      <h2>Give this to your agent</h2>
+      <p>Paste one line into your AI coding agent and it will walk you through setup.</p>
+      <div class="copyline">
+        <code id="agentLine">set up gws for dummies — https://gwsfordummies.to/llms.txt</code>
+        <button class="copy" id="copyBtn" type="button" data-line="set up gws for dummies — https://gwsfordummies.to/llms.txt">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What it does</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="glyph">01 / triage</span>
+        <h3>Inbox triage &amp; labeling</h3>
+        <p>Security-scans each message, figures out who the sender is and what it says, then applies a clean label taxonomy.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">02 / act</span>
+        <h3>Tasks &amp; Calendar from email</h3>
+        <p>Turns action-required mail into Google Tasks entries and Calendar events, with IDs, links, and undo notes.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">03 / recap</span>
+        <h3>Weekly digest</h3>
+        <p>A read-only summary of the last seven days: meetings, unread email count, and how much mail got labeled.</p>
+      </div>
+      <div class="card">
+        <span class="glyph">04 / autopilot</span>
+        <h3>Nightly labeling</h3>
+        <p>A deterministic sender-to-label script runs nightly (locally or on GitHub Actions) and is idempotent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quickstart</h2>
+    <pre class="code"><span class="c"># clone, set up, log in, go</span>
+git clone https://github.com/Mulla759/GWSforDummies.git &amp;&amp; cd GWSforDummies
+./setup.sh
+gws auth login -s <span class="g">"gmail,tasks,calendar"</span>
+gws-do <span class="g">"triage my inbox"</span></pre>
+  </section>
+
+  <section>
+    <h2>Links</h2>
+    <div class="links">
+      <a href="/llms.txt">Agent runbook <span>/llms.txt</span></a>
+      <a href="https://github.com/Mulla759/GWSforDummies">Source repo <span>github.com/Mulla759/GWSforDummies</span></a>
+      <a href="https://github.com/googleworkspace/cli">gws CLI <span>github.com/googleworkspace/cli</span></a>
+    </div>
+  </section>
+
+  <footer>
+    Not an official Google product. Built on the open-source <span class="mono">gws</span> CLI.
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  var btn = document.getElementById('copyBtn');
+  var line = btn.getAttribute('data-line');
+  var resetTimer;
+
+  function flash(label) {
+    btn.textContent = label;
+    btn.classList.add('done');
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('done');
+    }, 1800);
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'absolute';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    flash(ok ? 'Copied!' : 'Press Ctrl+C');
+  }
+
+  btn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(line).then(function () {
+        flash('Copied!');
+      }).catch(function () {
+        fallbackCopy(line);
+      });
+    } else {
+      fallbackCopy(line);
+    }
+  });
+})();
+</script>
+</body>
+</html>

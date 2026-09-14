@@ -5,6 +5,7 @@
 # This is the worked example of "add an automation by dropping a manifest":
 # see actions/weekly-digest.json. No AI, no writes, only `gws` reads.
 set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Portable PATH (mac + windows), same pattern as nightly-label.sh:
 if [ -n "${HOME:-}" ] && [ -d "$HOME/AppData/Roaming/npm" ]; then
   export PATH="$HOME/AppData/Roaming/npm:$HOME/AppData/Local/Microsoft/WinGet/Links:$PATH"
@@ -22,8 +23,22 @@ gws workflow +weekly-digest 2>/dev/null | jq -r '
 
 # 2) What got labeled in the last 7 days, by label (shows the automation working)
 echo "Labeled (7d):"
-for L in Finance Newsletters Shopping "Tech & Learning" Travel Events Security \
-         "Job Alerts" Applications Personal School Priority; do
+# Label list comes from scripts/label-rules.tsv when present; else the default set.
+labels="$(grep -v '^#' "$SCRIPT_DIR/label-rules.tsv" 2>/dev/null | cut -f1)"
+if [ -z "$labels" ]; then
+  labels="Finance
+Receipts & Orders
+Newsletters
+Shopping
+Tech & Learning
+Travel
+Events
+Security
+Social
+Priority"
+fi
+printf '%s\n' "$labels" | while IFS= read -r L; do
+  [ -z "$L" ] && continue
   n=$(gws gmail users messages list \
         --params "$(jq -n --arg q "in:inbox newer_than:7d label:\"$L\"" '{userId:"me",q:$q,maxResults:500}')" \
         --page-all 2>/dev/null | jq -s '[.[].messages[]?.id] | length')

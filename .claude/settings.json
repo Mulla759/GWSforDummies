@@ -46,6 +46,8 @@
       "Bash(rev:*)",
       "Bash(nl:*)",
       "Bash(column:*)",
+      "Bash(bash scripts/discover-senders.sh:*)",
+      "Bash(bash scripts/nightly-label.sh:*)",
       "WebSearch"
     ],
     "ask": [

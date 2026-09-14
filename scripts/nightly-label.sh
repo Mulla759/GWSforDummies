@@ -1,14 +1,37 @@
 #!/usr/bin/env bash
-# Nightly auto-labeler (deterministic, no LLM)
-# -----------------------------------------------------
-# Applies sender->label rules to NEW inbox mail. Needs only the `gmail.modify`
-# scope (no filters / settings scope). Idempotent: re-labeling an already-labeled
-# message is a no-op.
+# nightly-label.sh — deterministic (no LLM) sender/subject -> Gmail labeler.
+# ============================================================================
+# WHAT IT DOES
+#   Reads a curated rules file (TAB-separated) and applies each rule's label to
+#   matching NEW inbox mail. Idempotent: re-applying a label already on a
+#   message is a no-op, so running it repeatedly (or over an overlapping window)
+#   is safe.
 #
-# Schedule it (see SETUP.md). Default window = last 2 days so a daily run never
-# misses mail even if one night is skipped.
+# USAGE
+#   nightly-label.sh [--dry-run] [WINDOW]
+#     --dry-run   Report how many messages each rule WOULD label; change nothing.
+#                 May appear anywhere in the argument list.
+#     WINDOW      Gmail search window appended to "in:inbox"; default
+#                 "newer_than:2d" so a skipped night is still covered next run.
+#
+# RULES FORMAT (default: scripts/label-rules.tsv, override with $RULES)
+#   <label> <TAB> <from-domains> <TAB> <subject-terms>
+#     * label         : Gmail label name (created here if missing).
+#     * from-domains  : space-separated bare domains; "-" for subject-only.
+#     * subject-terms : a raw Gmail subject expression, already OR-joined and
+#                       quoted, e.g.  "action required" OR overdue ; empty for sender-only.
+#     * "#" comments and blank lines are ignored.
+#
+# SCOPES / PERMISSIONS
+#   Needs Gmail read+modify (gmail.modify) to list and label messages, and the
+#   label-create capability (same gmail scope) to create missing labels.
+#
+# SEE ALSO
+#   scripts/discover-senders.sh  — read-only helper to discover real senders.
+#   `label-rules-curator` agent  — writes this rules file after `gws auth`.
 #
 # Requires: gws (authenticated), jq on PATH.
+# ============================================================================
 set -uo pipefail
 # Platform PATH fixup — only prepend when the dirs exist, so this one script works
 # on Windows (Git Bash via Task Scheduler), macOS, and Linux (GitHub Actions).
@@ -19,45 +42,98 @@ for d in \
   [ -n "$d" ] && [ -d "$d" ] && export PATH="$d:$PATH"
 done
 
-WINDOW="${1:-newer_than:2d}"     # override e.g. ./nightly-label.sh newer_than:7d
+DRY_RUN=0
+WINDOW=""
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    -h|--help) sed -n '2,40p' "$0"; exit 0 ;;
+    *) WINDOW="$arg" ;;
+  esac
+done
+WINDOW="${WINDOW:-newer_than:2d}"
+
+RULES="${RULES:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/label-rules.tsv}"
 SCOPE="in:inbox $WINDOW"
+
+if [ ! -f "$RULES" ]; then
+  echo "[nightly-label] ERROR: rules file not found: $RULES" >&2
+  echo "  Run scripts/discover-senders.sh, then have the label-rules-curator" >&2
+  echo "  agent write the rules file. Refusing to silently do nothing." >&2
+  exit 1
+fi
 
 # Resolve a label NAME -> id at runtime (robust to id changes / new accounts).
 lid(){ gws gmail users labels list --params '{"userId":"me"}' 2>/dev/null \
         | jq -r --arg n "$1" '.labels[] | select(.name==$n) | .id'; }
 
-apply(){ # $1=label name   $2=from-list (domains, OR-separated)   [$3=subject-query]
-  local id; id="$(lid "$1")"
-  [ -z "$id" ] && { echo "  ! label not found (create it in Gmail first): $1"; return; }
-  local q
-  if [ -n "${3:-}" ]; then q="$SCOPE $3"; else q="$SCOPE from:($2)"; fi
-  local params ids cnt body
-  params="$(jq -n --arg q "$q" '{userId:"me",q:$q,maxResults:500}')"
-  ids="$(gws gmail users messages list --params "$params" --page-all 2>/dev/null | jq -s '[.[].messages[]?.id]')"
-  cnt="$(echo "$ids" | jq 'length')"
-  if [ "$cnt" -gt 0 ]; then
-    body="$(jq -n --argjson ids "$ids" --arg l "$id" '{ids:$ids,addLabelIds:[$l]}')"
-    gws gmail users messages batchModify --params '{"userId":"me"}' --json "$body" >/dev/null 2>&1 \
-      && echo "  $1: +$cnt" || echo "  $1: ERR"
-  else echo "  $1: 0"; fi
+# Resolve a label NAME -> id, creating the label if it does not exist.
+# Prints the id on stdout; notes/diagnostics go to stderr so callers can capture.
+ensure_label(){ # $1=label name
+  local id bg fg
+  id="$(lid "$1")"
+  if [ -z "$id" ]; then
+    case "$1" in
+      Priority) bg="#ffad47"; fg="#000000" ;;
+      Security) bg="#fb4c2f"; fg="#ffffff" ;;
+      *)        bg="#4a86e8"; fg="#ffffff" ;;
+    esac
+    echo "  + new label: $1" >&2
+    id="$(gws gmail users labels create --params '{"userId":"me"}' \
+          --json "$(jq -n --arg n "$1" --arg bg "$bg" --arg fg "$fg" \
+                   '{name:$n,color:{backgroundColor:$bg,textColor:$fg}}')" 2>/dev/null \
+          | jq -r '.id // empty')"
+    if [ -z "$id" ]; then
+      # Some accounts reject colors — retry without them.
+      id="$(gws gmail users labels create --params '{"userId":"me"}' \
+            --json "$(jq -n --arg n "$1" '{name:$n}')" 2>/dev/null \
+            | jq -r '.id // empty')"
+    fi
+  fi
+  printf '%s' "$id"
 }
 
-echo "[nightly-label] $(date) -- window: $WINDOW"
+apply(){ # $1=label name  $2=from-domains  $3=subject-terms (optional)
+  local label="$1" from="$2" subject="${3:-}" id q ids cnt
 
-# ── CUSTOMIZE THESE RULES FOR YOUR OWN INBOX ─────────────────────────────────
-# Each line:  apply "<Gmail label>" "<from-domain OR from-domain OR ...>"
-# The label must already exist in Gmail (create it once, or let the triage agent
-# make it). The domains below are ILLUSTRATIVE EXAMPLES — replace them with the
-# senders you actually receive. Run the email-triage agent first to discover them.
-apply "Finance"         "chase.com OR bankofamerica.com OR citibank.com OR discover.com OR amex.com OR ally.com"
-apply "Newsletters"     "substack.com OR mailchimp.com OR beehiiv.com OR medium.com OR morningbrew.com"
-apply "Shopping"        "amazon.com OR ebay.com OR etsy.com OR target.com OR walmart.com OR shopify.com"
-apply "Tech & Learning" "github.com OR stackoverflow.com OR coursera.org OR udemy.com OR openai.com OR notion.so"
-apply "Travel"          "delta.com OR united.com OR airbnb.com OR booking.com OR expedia.com OR amtrak.com"
-apply "Events"          "eventbrite.com OR meetup.com OR calendly.com OR lu.ma OR hopin.com"
-apply "Security"        "accounts.google.com OR login.gov"
-apply "Social"          "linkedin.com OR facebookmail.com OR x.com OR reddit.com"
+  q="$SCOPE"
+  if [ -n "$from" ] && [ "$from" != "-" ]; then
+    q="$q from:($(printf '%s' "$from" | sed -E 's/[[:space:]]+/ OR /g'))"
+  fi
+  if [ -n "$subject" ]; then
+    q="$q subject:($subject)"
+  fi
 
-# Importance overlay (subject-based) — the 3rd arg switches to a subject query:
-apply "Priority" "" 'subject:("action required" OR "past due" OR overdue OR fraud OR "security alert" OR "unusual sign-in" OR "payment failed" OR "verify your account" OR "final notice")'
+  ids="$(gws gmail users messages list \
+           --params "$(jq -n --arg q "$q" '{userId:"me",q:$q,maxResults:500}')" \
+           --page-all 2>/dev/null \
+         | jq -s '[.[].messages[]?.id]')"
+  cnt="$(printf '%s' "$ids" | jq 'length' 2>/dev/null)"
+  [ -z "$cnt" ] && cnt=0
+
+  if [ "$DRY_RUN" = 1 ]; then
+    echo "  $label: $cnt (dry-run)"
+    return
+  fi
+
+  id="$(ensure_label "$label")"
+  [ -z "$id" ] && { echo "  ! could not resolve/create label: $label" >&2; return; }
+
+  if [ "$cnt" -gt 0 ]; then
+    gws gmail users messages batchModify --params '{"userId":"me"}' \
+      --json "$(jq -n --argjson ids "$ids" --arg l "$id" '{ids:$ids,addLabelIds:[$l]}')" \
+      >/dev/null 2>&1 \
+      && echo "  $label: +$cnt" || echo "  $label: ERR"
+  else
+    echo "  $label: 0"
+  fi
+}
+
+echo "[nightly-label] $(date) -- window: $WINDOW$([ "$DRY_RUN" = 1 ] && echo ' (dry-run)')"
+
+while IFS=$'\t' read -r label from subject; do
+  case "$label" in ''|'#'*) continue ;; esac
+  apply "$label" "$from" "${subject:-}"
+done < "$RULES"
+
 echo "[nightly-label] done"

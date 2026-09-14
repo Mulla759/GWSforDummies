@@ -1,0 +1,361 @@
+# GWS for Dummies
+
+> A layman-friendly **Gmail triage toolkit**. You type what you want in plain English
+> — *"triage my inbox and label everything"* — and a small team of focused AI
+> sub-agents drives Google's open-source [`gws` CLI](https://github.com/googleworkspace/cli)
+> against **your own** Google account. It labels mail, flags phishing, turns
+> action-required mail into Google Tasks & Calendar events (with your OK), and can run a
+> **nightly auto-labeler** even when your PC is off. It **reads and labels but never
+> sends, trashes, or deletes.**
+
+Use this page when a human tells you *"set up gws for dummies"*. It is the complete
+runbook: toolchain → **Google Cloud OAuth credentials** → `gws auth` → clone → first
+triage → nightly GitHub Action.
+
+- **Repo:** https://github.com/Mulla759/GWSforDummies
+- **This file:** https://gwsfordummies.to/llms.txt
+- **Engine:** [`gws`](https://github.com/googleworkspace/cli) (Google Workspace CLI, v0.22.5+)
+- **License:** open source, provided as-is. Not an official Google product.
+
+---
+
+## For the agent — how to run this setup
+
+Read this before you start. The human has already authorized the whole flow.
+
+1. **Ask for shell permission once and work straight through.** Do not stop between
+   steps to ask "should I continue?".
+2. **Two kinds of step.** Some are yours to run in a shell; a few are **human-only**
+   (they happen in a browser). You cannot click through Google's OAuth consent UI — hand
+   those to the human with the exact URL and wait for them to confirm.
+3. **Collect three things up front** (ask in one message, then proceed):
+   - **OS** (macOS / Windows / Linux) — decides `python3` vs `python` and jq install.
+   - **Gmail address** to triage (used only where Google asks; `gws` never stores it in
+     the repo).
+   - Whether they want you to **create a new Google Cloud project** (recommended) or
+     reuse one — if reusing, ask for the **project ID**.
+   A **GitHub account** is only needed for the optional nightly Action at the end.
+4. **Template values.** Everywhere below, replace `<YOUR_PROJECT_ID>` and `<YOUR_EMAIL>`
+   with the human's answers. Never write their real values into the repo — they live in
+   `~/.config/gws/` and in GitHub Secrets only.
+5. **Secrets discipline.** `client_secret.json` and `gws auth export --unmasked` contain
+   credentials. Never `cat` an export to the screen, never commit either file, and never
+   paste a refresh token into a repo file. Pipe exports directly into the secret store
+   (`... | gh secret set ...`). `.gitignore` already blocks `client_secret*.json`.
+6. **Report the outcome as a doorway, not an install log.** Open with one line about what
+   the human now has, then propose 2–3 concrete things to run. Mechanics go in a footnote.
+   See *Report back* at the end.
+
+### Runnability legend
+
+- **[agent]** — run it in a shell yourself.
+- **[human]** — a browser-only step for the human; give them the URL and wait.
+
+---
+
+## Prerequisites
+
+- **Node.js 18+** and npm — for the `gws` CLI.
+- **`gws`** — `npm i -g @googleworkspace/cli`.
+- **`jq`** — the agents pipe JSON through it.
+- **Python 3.9+** — the safety hook (`.claude/hooks/bash-guard.py`) runs as `python3`
+  (macOS/Linux) or `python` (Windows).
+- **An AI harness** — Claude Code by default (`npm i -g @anthropic-ai/claude-code`), or any
+  other framework via `harness/`.
+- **A Google account** — the inbox to triage.
+- **A Google Cloud project** — for your own OAuth credentials (created in Step 2).
+
+---
+
+## Step 1 — Install the toolchain  [agent]
+
+```bash
+# gws + the default AI harness (Node 18+ required)
+npm install -g @googleworkspace/cli
+npm install -g @anthropic-ai/claude-code
+
+# jq — pick your platform:
+brew install jq                                  # macOS
+winget install jqlang.jq                         # Windows (reopen the terminal after)
+sudo apt-get install jq                          # Debian/Ubuntu
+```
+
+Verify:
+
+```bash
+gws --version        # expect 0.22.5+
+jq --version
+python3 --version    # or: python --version
+```
+
+**Windows only — fix the hook interpreter.** The safety hook ships as `python3`; on
+Windows edit BOTH of these to use `python`:
+- `.claude/settings.json` → the `PreToolUse` hook command →
+  `python .claude/hooks/bash-guard.py`
+- `.claude/hooks/bash-guard.sh` → `exec python "$(dirname "$0")/bash-guard.py" "$@"`
+
+---
+
+## Step 2 — Google Cloud project + OAuth credentials
+
+This is the part that makes `gws` able to reach the human's Gmail/Calendar/Tasks. Do it
+once.
+
+### 2a. Create (or pick) a project  [agent if `gcloud` is installed, else human]
+
+If `gcloud` is available and authenticated:
+
+```bash
+gcloud projects create "gws-for-dummies" --name="GWS for Dummies"
+gcloud config set project <YOUR_PROJECT_ID>
+```
+
+Otherwise the human creates one and tells you the project ID:
+**[human]** https://console.cloud.google.com/projectcreate
+
+### 2b. Enable the three APIs  [agent if `gcloud`, else human]
+
+```bash
+gcloud services enable \
+  gmail.googleapis.com \
+  calendar-json.googleapis.com \
+  tasks.googleapis.com \
+  --project <YOUR_PROJECT_ID>
+```
+
+**[human]** Or enable each in the console (APIs & Services → Library):
+- Gmail API — https://console.cloud.google.com/apis/library/gmail.googleapis.com
+- Google Calendar API — https://console.cloud.google.com/apis/library/calendar-json.googleapis.com
+- Google Tasks API — https://console.cloud.google.com/apis/library/tasks.googleapis.com
+
+> Forgetting this surfaces later as a `403 accessNotConfigured`.
+
+### 2c. Configure the OAuth consent screen  [human]
+
+Open **APIs & Services → OAuth consent screen** for the project:
+https://console.cloud.google.com/apis/credentials/consent?project=<YOUR_PROJECT_ID>
+
+1. **User type: External** (testing mode is fine for personal use).
+2. Set an app name (e.g. "GWS for Dummies") and your own email as support contact.
+3. Under **Test users**, add **`<YOUR_EMAIL>`** (the account being triaged).
+4. You do **not** add scopes here — `gws` requests `gmail`, `tasks`, `calendar` at login.
+
+> **Later, for the nightly cloud job:** on this same screen, **Audience → Publish app →
+> Confirm**. In *testing* mode Google expires the refresh token after **7 days**, which
+> would break a scheduled job weekly. Publishing (status *In production*) stops that. The
+> "unverified app" notice stays — that is fine for personal use.
+
+### 2d. Create a Desktop OAuth client and download the JSON  [human]
+
+**Credentials → Create credentials → OAuth client ID → Application type: Desktop app →
+Create → Download JSON.**
+https://console.cloud.google.com/apis/credentials?project=<YOUR_PROJECT_ID>
+
+### 2e. Place `client_secret.json`  [agent]
+
+Move the downloaded file to the path `gws` reads (the human can save it there, or tell you
+where it downloaded and you move it):
+
+```
+~/.config/gws/client_secret.json                                  # macOS / Linux
+%USERPROFILE%\.config\gws\client_secret.json                      # Windows (PowerShell: $env:USERPROFILE)
+```
+
+```bash
+mkdir -p ~/.config/gws && mv ~/Downloads/client_secret*.json ~/.config/gws/client_secret.json
+```
+
+Confirm the file exists and is valid JSON (`jq . ~/.config/gws/client_secret.json`) but
+**do not print its contents.**
+
+---
+
+## Step 3 — Authenticate `gws`  [agent triggers, human approves]
+
+```bash
+gws auth login -s "gmail,tasks,calendar"
+```
+
+> **Quote the scope list.** In PowerShell, commas split arguments and silently drop scopes.
+
+A browser opens; the human approves. If they see *"Google hasn't verified this app"* →
+**Advanced → continue** (safe — they are the developer).
+
+Verify:
+
+```bash
+gws auth status
+gws gmail users messages list --params '{"userId":"me","maxResults":1}'
+gws tasks tasklists list
+gws calendar calendarList list
+```
+
+All four should return JSON. If login returns `403 insufficientPermissions` after adding
+scopes, delete the stale token cache and retry:
+`rm ~/.config/gws/token_cache.json` (Windows: `%USERPROFILE%\.config\gws\token_cache.json`).
+
+---
+
+## Step 4 — Clone and bootstrap  [agent]
+
+```bash
+git clone https://github.com/Mulla759/GWSforDummies.git
+cd GWSforDummies
+./setup.sh                       # installs/checks gws, jq, auth, and the AI harness
+export PATH="$PWD/bin:$PATH"     # so `gws-do` is on PATH (Windows: use bin\gws-do.cmd)
+gws-do --status                  # readiness: harness + auth + registered actions
+```
+
+`setup.sh` is idempotent. It installs `gws` if missing, checks `jq`, reports Google auth
+state, and checks the AI harness credentials.
+
+---
+
+## Step 5 — Run it  [agent]
+
+```bash
+gws-do "triage my inbox and label everything"
+gws-do "turn my action-required mail into tasks and calendar events"
+gws-do "give me my weekly digest"
+
+gws-do --list                    # everything it can do
+gws-do --dry-run "clean up my inbox"   # show routing, run nothing
+```
+
+`gws-do` **describes → routes → delegates**: it sends the goal plus the action catalog to
+the harness, which picks the right sub-agent. Start with a small triage (5 messages) so
+the human can sanity-check the labels before a full run.
+
+You can also launch an agent directly:
+
+```bash
+claude --agent email-triage-orchestrator     # Phase 1: triage + labeling
+claude --agent email-action-orchestrator     # Phase 2: email -> Tasks/Calendar
+```
+
+---
+
+## Step 6 — Curate the labeling rules for their inbox  [agent]
+
+Labeling is **deterministic and runs with no LLM**. It works off one small data file,
+`scripts/label-rules.tsv` (columns: `label <TAB> from-domains <TAB> subject-terms`), which
+maps mail to common sender **pathways** — Finance, Receipts & Orders, Newsletters,
+Shopping, Tech & Learning, Travel, Events, Security, Social, plus a subject-only
+**Priority** overlay. Each row matches `from:(domain OR domain)`, a Gmail subject
+expression (e.g. `"action required" OR overdue`), or both.
+
+Curate it once from the human's real mail so the nightly job then "does the job" on its own:
+
+```bash
+gws-do --action curate-labels        # runs the label-rules-curator agent
+# or directly: claude --agent label-rules-curator
+bash scripts/discover-senders.sh     # the read-only discovery it uses (top domains + subject words, 90d)
+```
+
+The curator reads their existing labels, maps the discovered senders onto that small
+taxonomy, creates any missing labels, writes `scripts/label-rules.tsv`, then verifies with a
+dry run (per-label counts, changes nothing):
+
+```bash
+bash scripts/nightly-label.sh --dry-run
+```
+
+`nightly-label.sh` creates missing labels on the fly, **adds** labels via
+`messages batchModify` (never removes), and is **idempotent** — re-labeling is a no-op.
+
+---
+
+## Step 7 — Nightly auto-labeler in the cloud (optional)  [agent + human]
+
+Runs `scripts/nightly-label.sh` on GitHub's servers every night, so labeling continues
+with the PC off. Full detail: [`GITHUB-ACTIONS.md`](https://github.com/Mulla759/GWSforDummies/blob/master/GITHUB-ACTIONS.md).
+
+> **Two hard prerequisites:** (1) the OAuth app is **published to Production** (Step 2c),
+> and (2) the repo is **PRIVATE** — the credential grants mailbox access.
+
+```bash
+# 1. Put the project in a PRIVATE repo (if it isn't already)
+git init && git add . && git commit -m "GWS for Dummies"
+gh repo create gws-for-dummies --private --source=. --push
+
+# 2. Export the credential straight into a repo secret — never to a file or the screen
+gws auth export --unmasked | gh secret set GWS_CREDENTIALS --repo <owner>/gws-for-dummies
+
+# 3. Test it
+gh workflow run nightly-gmail-label --repo <owner>/gws-for-dummies
+gh run watch --repo <owner>/gws-for-dummies
+```
+
+The workflow (`.github/workflows/nightly-gmail-label.yml`) restores the secret to a file,
+points `gws` at it with `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` +
+`GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`, runs the labeler, then scrubs the file.
+The `cron:` line is UTC — adjust it to the human's timezone. GitHub disables scheduled
+workflows after **60 days of repo inactivity**; a push or manual run resets it.
+
+Customize further by editing `scripts/label-rules.tsv` for the human's real mail, or re-run
+the curator (`gws-do --action curate-labels`).
+
+---
+
+## Safety model (reassure the human)
+
+Two enforcement layers mean the agents **read and label, but never send, trash, or
+delete**:
+
+- `.claude/settings.json` `permissions` — an outer allow/ask/deny rail. All
+  `send`/`trash`/`delete` verbs are **denied**.
+- A `PreToolUse(Bash)` hook (`.claude/hooks/bash-guard.py`) enforces each sub-agent's
+  `.claude/agents/<name>.allowlist` — only the exact `gws` commands that job needs. It
+  also blocks command substitution, subshells, redirects, backgrounding, and pipes into
+  anything that is not a read-only filter (`jq grep head tail cut sort uniq wc tr cat rev
+  nl column`).
+
+Calendar events created by agents are insert-only and reversible in the Calendar UI.
+Email bodies are treated as untrusted input; links are never auto-opened.
+
+---
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `gws` not found | Reopen the terminal; confirm npm's global bin is on PATH. |
+| "Access blocked" / 403 at login | Add `<YOUR_EMAIL>` as a **Test user** (Step 2c). |
+| Too many scopes error | `gws auth login -s "gmail"` (don't use the full preset). |
+| `403 accessNotConfigured` | Enable Gmail/Calendar/Tasks API (Step 2b). |
+| Hook error about `python` | Ensure `python3`/`python` is on PATH; fix the hook command (Step 1). |
+| `403 insufficientPermissions` | Delete the stale token cache (Step 3) and retry. |
+| `jq: command not found` | Install `jq` (Step 1). |
+| Cloud job fails after ~7 days | Publish the OAuth app to Production (Step 2c) and refresh the secret. |
+
+---
+
+## Report back
+
+End with a **doorway, not an install log**. One line on what they gained, e.g.:
+
+> GWS for Dummies is live — `gws` is authenticated as `<their address>`, the triage and
+> email→task agents are ready, and the nightly labeler is set to run in the cloud.
+
+Then propose 2–3 concrete things you can do right now and offer to run one:
+
+- *"Triage my inbox and label everything"* (start with 5 messages).
+- *"Turn my action-required mail into tasks and calendar events"* (it confirms each one).
+- *"Give me my weekly digest."*
+
+Mechanics (GCP project id, secret name, cron timezone) go in a footnote — mention only
+what the human must act on.
+
+---
+
+## Values to template
+
+| Placeholder | Meaning | Where it lives |
+|---|---|---|
+| `<YOUR_PROJECT_ID>` | the Google Cloud project id | `gcloud`, console URLs |
+| `<YOUR_EMAIL>` | the Gmail address being triaged | OAuth consent **Test users** |
+| `<YOUR_PROJECT_ID>` / `<owner>/<repo>` | for the nightly secret | `gh secret set ... --repo` |
+
+Never commit `client_secret.json`, `credentials.json`, `token.json`, or any exported
+credential bundle — `.gitignore` blocks the common names, but keep them out of the repo
+on purpose.

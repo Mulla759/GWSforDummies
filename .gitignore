@@ -9,8 +9,6 @@ client_secret*.json
 .env
 .env.*
 
-# State files with potentially sensitive scheduling data
-
 # OS files
 .DS_Store
 Thumbs.db
