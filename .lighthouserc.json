@@ -4,7 +4,7 @@
       "url": ["https://gws-for-dummies.vercel.app/"],
       "numberOfRuns": 2,
       "settings": {
-        "preset": "desktop"
+        "preset": "mobile"
       }
     },
     "assert": {
