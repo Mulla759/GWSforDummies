@@ -290,21 +290,30 @@ with the PC off. Full detail: [`GITHUB-ACTIONS.md`](https://github.com/Mulla759/
 > and (2) the repo is **PRIVATE** — the credential grants mailbox access.
 
 ```bash
-# 1. Create a PRIVATE repo for the credential job (the public repo can't hold the
-#    secret). `--remote nightly` avoids clashing with the `origin` from the Step 4 clone.
+# 1. Create YOUR OWN private repo for the credential job — never put credentials in a
+#    public repo, and never use anyone else's. `--remote nightly` avoids clashing with
+#    the `origin` from the Step 4 clone.
 gh repo create gws-for-dummies --private --source=. --remote nightly --push
 
-# 2. Export the credential straight into a repo secret — never to a file or the screen
-gws auth export --unmasked | gh secret set GWS_CREDENTIALS --repo <owner>/gws-for-dummies
+# 2. Add the scheduled labeler from this repo's template into YOUR private repo:
+mkdir -p .github/workflows
+cp examples/github-actions/nightly-gmail-label.yml .github/workflows/nightly-gmail-label.yml
+git add .github/workflows/nightly-gmail-label.yml
+git commit -m "Add nightly labeler" && git push nightly HEAD
 
-# 3. Test it
-gh workflow run nightly-gmail-label --repo <owner>/gws-for-dummies
-gh run watch --repo <owner>/gws-for-dummies
+# 3. Export YOUR credential straight into YOUR private repo's secret — never to a file
+#    or the screen, and never to a repo you don't own:
+gws auth export --unmasked | gh secret set GWS_CREDENTIALS --repo <your-account>/gws-for-dummies
+
+# 4. Test it
+gh workflow run nightly-gmail-label --repo <your-account>/gws-for-dummies
+gh run watch --repo <your-account>/gws-for-dummies
 ```
 
-The workflow (`.github/workflows/nightly-gmail-label.yml`) restores the secret to a file,
-points `gws` at it with `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` +
-`GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`, runs the labeler, then scrubs the file.
+The workflow template (`examples/github-actions/nightly-gmail-label.yml`) restores the
+secret to a file, points `gws` at it with `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` +
+`GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`, runs the labeler, then scrubs the file. It
+uses **your** credentials only — this public repo ships no secrets and runs no jobs.
 The `cron:` line is UTC — adjust it to the human's timezone. GitHub disables scheduled
 workflows after **60 days of repo inactivity**; a push or manual run resets it.
 

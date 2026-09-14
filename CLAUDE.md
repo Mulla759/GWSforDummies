@@ -88,8 +88,9 @@ previews per-label counts without changing anything.
 - **Rules:** `scripts/label-rules.tsv` — curated by the `label-rules-curator` agent.
 - **Discovery:** `scripts/discover-senders.sh` — read-only top senders/subjects.
 - **Windows wrapper:** `scripts/nightly-label.cmd` — calls nightly-label.sh via Git Bash
-- **Cloud runner:** `.github/workflows/nightly-gmail-label.yml` — runs on GitHub Actions
-  nightly, even when the PC is off. See [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md).
+- **Cloud runner (optional):** `examples/github-actions/nightly-gmail-label.yml` — a
+  template to copy into **your own private repo**'s `.github/workflows/`, so it runs on
+  GitHub Actions nightly even when the PC is off. See [`GITHUB-ACTIONS.md`](GITHUB-ACTIONS.md).
 
 Example pathways: Finance, Receipts & Orders, Newsletters, Shopping, Tech & Learning,
 Travel, Events, Security, Social, Priority (subject-only overlay) — edit the rules file

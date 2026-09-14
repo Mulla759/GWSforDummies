@@ -1,8 +1,11 @@
 name: nightly-gmail-label
 
-# Runs the same scripts/nightly-label.sh on GitHub's servers, so labeling happens
-# even when your PC is off. Requires a repo secret named GWS_CREDENTIALS (see
-# GITHUB-ACTIONS.md). Use a PRIVATE repo — the secret grants mailbox access.
+# TEMPLATE — copy this file into YOUR OWN private repo at
+# .github/workflows/nightly-gmail-label.yml. It runs scripts/nightly-label.sh on a
+# schedule, so labeling happens even when your PC is off.
+# Requires a repo secret named GWS_CREDENTIALS holding YOUR OWN exported gws
+# credentials (see GITHUB-ACTIONS.md). Use a PRIVATE repo — the secret grants mailbox
+# access. This public repo ships no secrets and runs no scheduled jobs.
 
 on:
   schedule:

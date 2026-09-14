@@ -1,7 +1,12 @@
 # Run the nightly labeler in the cloud (PC can be off)
 
 This runs `scripts/nightly-label.sh` on GitHub's servers every night, so labeling
-happens even when your computer is powered off. Workflow: `.github/workflows/nightly-gmail-label.yml`.
+happens even when your computer is powered off. The workflow ships as a **template** at
+[`examples/github-actions/nightly-gmail-label.yml`](examples/github-actions/nightly-gmail-label.yml):
+copy it into **your own private repo** at `.github/workflows/nightly-gmail-label.yml`.
+
+> **This repo ships no secrets and runs no jobs for you.** You create your own private
+> repo and store **your own** `GWS_CREDENTIALS`. Never reuse anyone else's credentials.
 
 > **Labeling rules:** the job reads `scripts/label-rules.tsv`. Curate it for your own inbox
 > first — run `gws-do --action curate-labels` (or `claude --agent label-rules-curator`) after
@@ -30,14 +35,22 @@ happens even when your computer is powered off. Workflow: `.github/workflows/nig
 
 ## Steps
 
-### 1. Put this project in a private GitHub repo
+### 1. Put this project in YOUR OWN private GitHub repo (and add the workflow)
 ```powershell
 cd <path-to-repo>
 git init
 git add .
 git commit -m "Gmail automation project"
-gh repo create gws-for-dummies --private --source=. --push
-# (or create a private repo in the GitHub UI and: git remote add origin <url>; git push -u origin HEAD)
+# If you cloned this repo, `origin` already exists — use a separate remote name:
+gh repo create gws-for-dummies --private --source=. --remote nightly --push
+# (or create a private repo in the GitHub UI and: git remote add nightly <url>; git push -u nightly HEAD)
+
+# Add the scheduled labeler from the template:
+mkdir .github\workflows
+Copy-Item examples\github-actions\nightly-gmail-label.yml .github\workflows\nightly-gmail-label.yml
+git add .github/workflows/nightly-gmail-label.yml
+git commit -m "Add nightly labeler"
+git push nightly HEAD
 ```
 
 ### 2. Export your gws credentials (this is the secret value)
