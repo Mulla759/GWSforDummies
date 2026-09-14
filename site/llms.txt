@@ -14,6 +14,7 @@ triage → nightly GitHub Action.
 
 - **Repo:** https://github.com/Mulla759/GWSforDummies
 - **This file:** https://gwsfordummies.to/llms.txt
+  (until DNS resolves: https://gws-for-dummies.vercel.app/llms.txt)
 - **Engine:** [`gws`](https://github.com/googleworkspace/cli) (Google Workspace CLI, v0.22.5+)
 - **License:** open source, provided as-is. Not an official Google product.
 
@@ -61,7 +62,11 @@ Read this before you start. The human has already authorized the whole flow.
 - **Python 3.9+** — the safety hook (`.claude/hooks/bash-guard.py`) runs as `python3`
   (macOS/Linux) or `python` (Windows).
 - **An AI harness** — Claude Code by default (`npm i -g @anthropic-ai/claude-code`), or any
-  other framework via `harness/`.
+  other framework via `harness/`. It must be authenticated (Claude Code: run `claude` and
+  log in, or export `ANTHROPIC_API_KEY`).
+- **`git`** — to clone the repo (Step 4).
+- **GitHub CLI (`gh`)** — *optional*, only for the nightly cloud job (Step 7); run
+  `gh auth login` first.
 - **A Google account** — the inbox to triage.
 - **A Google Cloud project** — for your own OAuth credentials (created in Step 2).
 
@@ -88,11 +93,9 @@ jq --version
 python3 --version    # or: python --version
 ```
 
-**Windows only — fix the hook interpreter.** The safety hook ships as `python3`; on
-Windows edit BOTH of these to use `python`:
-- `.claude/settings.json` → the `PreToolUse` hook command →
-  `python .claude/hooks/bash-guard.py`
-- `.claude/hooks/bash-guard.sh` → `exec python "$(dirname "$0")/bash-guard.py" "$@"`
+> **Windows:** the safety hook ships configured for `python3`. You'll switch it to
+> `python` **after cloning** — see the Windows note in Step 4. (Don't try it before the
+> repo exists locally.)
 
 ---
 
@@ -107,6 +110,8 @@ If `gcloud` is available and authenticated:
 
 ```bash
 gcloud projects create "gws-for-dummies" --name="GWS for Dummies"
+# ids are globally unique — if that one is taken, append a suffix (e.g.
+# gws-for-dummies-1234) and use it as <YOUR_PROJECT_ID> everywhere below.
 gcloud config set project <YOUR_PROJECT_ID>
 ```
 
@@ -133,7 +138,7 @@ gcloud services enable \
 ### 2c. Configure the OAuth consent screen  [human]
 
 Open **APIs & Services → OAuth consent screen** for the project:
-https://console.cloud.google.com/apis/credentials/consent?project=<YOUR_PROJECT_ID>
+https://console.cloud.google.com/auth/overview?project=<YOUR_PROJECT_ID>
 
 1. **User type: External** (testing mode is fine for personal use).
 2. Set an app name (e.g. "GWS for Dummies") and your own email as support contact.
@@ -162,7 +167,13 @@ where it downloaded and you move it):
 ```
 
 ```bash
+# macOS / Linux
 mkdir -p ~/.config/gws && mv ~/Downloads/client_secret*.json ~/.config/gws/client_secret.json
+```
+```powershell
+# Windows (PowerShell)
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.config\gws" | Out-Null
+Move-Item "$env:USERPROFILE\Downloads\client_secret*.json" "$env:USERPROFILE\.config\gws\client_secret.json"
 ```
 
 Confirm the file exists and is valid JSON (`jq . ~/.config/gws/client_secret.json`) but
@@ -201,13 +212,19 @@ scopes, delete the stale token cache and retry:
 ```bash
 git clone https://github.com/Mulla759/GWSforDummies.git
 cd GWSforDummies
-./setup.sh                       # installs/checks gws, jq, auth, and the AI harness
-export PATH="$PWD/bin:$PATH"     # so `gws-do` is on PATH (Windows: use bin\gws-do.cmd)
+./setup.sh                       # installs/checks gws, jq, auth, harness (Windows: run in Git Bash → bash setup.sh)
+export PATH="$PWD/bin:$PATH"     # so `gws-do` is on PATH (Windows: use bin\gws-do.cmd via Git Bash)
 gws-do --status                  # readiness: harness + auth + registered actions
 ```
 
 `setup.sh` is idempotent. It installs `gws` if missing, checks `jq`, reports Google auth
 state, and checks the AI harness credentials.
+
+**Windows only — fix the hook interpreter before Step 5.** The safety hook ships as
+`python3`; on Windows edit BOTH of these to use `python`:
+- `.claude/settings.json` → the `PreToolUse` hook command →
+  `python .claude/hooks/bash-guard.py`
+- `.claude/hooks/bash-guard.sh` → `exec python "$(dirname "$0")/bash-guard.py" "$@"`
 
 ---
 
@@ -274,9 +291,9 @@ with the PC off. Full detail: [`GITHUB-ACTIONS.md`](https://github.com/Mulla759/
 > and (2) the repo is **PRIVATE** — the credential grants mailbox access.
 
 ```bash
-# 1. Put the project in a PRIVATE repo (if it isn't already)
-git init && git add . && git commit -m "GWS for Dummies"
-gh repo create gws-for-dummies --private --source=. --push
+# 1. Create a PRIVATE repo for the credential job (the public repo can't hold the
+#    secret). `--remote nightly` avoids clashing with the `origin` from the Step 4 clone.
+gh repo create gws-for-dummies --private --source=. --remote nightly --push
 
 # 2. Export the credential straight into a repo secret — never to a file or the screen
 gws auth export --unmasked | gh secret set GWS_CREDENTIALS --repo <owner>/gws-for-dummies
@@ -321,7 +338,7 @@ Email bodies are treated as untrusted input; links are never auto-opened.
 |---|---|
 | `gws` not found | Reopen the terminal; confirm npm's global bin is on PATH. |
 | "Access blocked" / 403 at login | Add `<YOUR_EMAIL>` as a **Test user** (Step 2c). |
-| Too many scopes error | `gws auth login -s "gmail"` (don't use the full preset). |
+| Too many scopes error | Fallback: `gws auth login -s "gmail"` — drops Tasks/Calendar until you re-auth with all three. |
 | `403 accessNotConfigured` | Enable Gmail/Calendar/Tasks API (Step 2b). |
 | Hook error about `python` | Ensure `python3`/`python` is on PATH; fix the hook command (Step 1). |
 | `403 insufficientPermissions` | Delete the stale token cache (Step 3) and retry. |
@@ -354,7 +371,7 @@ what the human must act on.
 |---|---|---|
 | `<YOUR_PROJECT_ID>` | the Google Cloud project id | `gcloud`, console URLs |
 | `<YOUR_EMAIL>` | the Gmail address being triaged | OAuth consent **Test users** |
-| `<YOUR_PROJECT_ID>` / `<owner>/<repo>` | for the nightly secret | `gh secret set ... --repo` |
+| `<owner>/<repo>` | the private GitHub repo for the nightly secret | `gh secret set ... --repo` |
 
 Never commit `client_secret.json`, `credentials.json`, `token.json`, or any exported
 credential bundle — `.gitignore` blocks the common names, but keep them out of the repo

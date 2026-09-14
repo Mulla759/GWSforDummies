@@ -54,6 +54,10 @@ main() {
   esac
 
   local goal="$*"
+  # `--action <id>` with no goal: default the goal to the action's title.
+  if [ -z "$goal" ] && [ -n "${FORCE_ACTION:-}" ]; then
+    goal="$(registry_field "$FORCE_ACTION" title 2>/dev/null)"
+  fi
   [ -z "$goal" ] && { echo "gws-do: describe a goal, e.g.  gws-do \"triage my inbox\"" >&2; exit 2; }
 
   local id; id="$(route_goal "$goal")"
