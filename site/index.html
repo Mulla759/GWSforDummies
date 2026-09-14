@@ -3,266 +3,257 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GWS for Dummies — email triage made easy</title>
-<meta name="description" content="A layman-friendly Gmail triage toolkit. Say what you want in plain English and a small team of AI sub-agents drives the Google Workspace CLI against your own account.">
-<style>
-  :root {
-    --bg: #0d1117;
-    --panel: #161b22;
-    --panel-2: #1c2230;
-    --border: #2d333b;
-    --text: #e6edf3;
-    --muted: #9aa4b2;
-    --accent: #58a6ff;
-    --accent-2: #7ee787;
-    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: radial-gradient(1200px 600px at 50% -10%, #17233a 0%, var(--bg) 55%) no-repeat, var(--bg);
-    color: var(--text);
-    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-  header.hero { padding: 76px 0 40px; }
-  .badge {
-    display: inline-block;
-    font: 12px/1 var(--mono);
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--accent-2);
-    border: 1px solid var(--border);
-    background: var(--panel);
-    padding: 7px 10px;
-    border-radius: 999px;
-    margin-bottom: 20px;
-  }
-  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
-  h1 .accent { color: var(--accent); }
-  .pitch { font-size: 1.1rem; color: #c9d4e0; margin: 0 0 10px; max-width: 62ch; }
-  .pitch .mono { font-family: var(--mono); font-size: .95em; color: var(--text); background: var(--panel-2); padding: 1px 6px; border-radius: 6px; }
-  section { padding: 26px 0; }
-  h2 { font-size: 1.35rem; margin: 0 0 18px; letter-spacing: -0.01em; }
-
-  .agent-card {
-    border: 1px solid #2b4a78;
-    background: linear-gradient(180deg, #152238 0%, var(--panel) 100%);
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 14px 40px rgba(0,0,0,.35);
-  }
-  .agent-card h2 { margin: 0 0 4px; }
-  .agent-card p { margin: 0 0 16px; color: var(--muted); font-size: .95rem; }
-  .copyline {
-    display: flex;
-    align-items: stretch;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .copyline code {
-    flex: 1 1 320px;
-    font-family: var(--mono);
-    font-size: .95rem;
-    background: #0b1220;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 13px 14px;
-    color: var(--accent-2);
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  button.copy {
-    font: 600 .95rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #04101f;
-    background: var(--accent);
-    border: 0;
-    border-radius: 10px;
-    padding: 0 20px;
-    min-height: 46px;
-    cursor: pointer;
-    transition: filter .15s ease, transform .05s ease;
-  }
-  button.copy:hover { filter: brightness(1.08); }
-  button.copy:active { transform: translateY(1px); }
-  button.copy.done { background: var(--accent-2); }
-
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .card {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 16px 18px;
-  }
-  .card h3 { margin: 0 0 6px; font-size: 1rem; }
-  .card p { margin: 0; color: var(--muted); font-size: .92rem; }
-  .card .glyph { font-family: var(--mono); color: var(--accent); font-size: .8rem; display: block; margin-bottom: 8px; }
-
-  pre.code {
-    background: #0b1220;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    overflow-x: auto;
-    font-family: var(--mono);
-    font-size: .9rem;
-    line-height: 1.7;
-    color: #d7e2ee;
-    margin: 0;
-  }
-  pre.code .c { color: var(--muted); }
-  pre.code .g { color: var(--accent-2); }
-
-  .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
-  .links a {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: .92rem;
-    color: var(--text);
-  }
-  .links a:hover { border-color: var(--accent); text-decoration: none; }
-  .links a span { color: var(--muted); font-family: var(--mono); font-size: .82rem; }
-
-  footer {
-    border-top: 1px solid var(--border);
-    margin-top: 30px;
-    padding: 26px 0 44px;
-    color: var(--muted);
-    font-size: .88rem;
-  }
-  footer .mono { font-family: var(--mono); }
-
-  @media (max-width: 620px) {
-    h1 { font-size: 1.85rem; }
-    header.hero { padding: 52px 0 24px; }
-    .grid { grid-template-columns: 1fr; }
-  }
-</style>
+<title>GWS for Dummies — Gmail triage, Tasks &amp; Calendar from plain English</title>
+<meta name="description" content="Tell an AI coding agent what you want in plain English. GWS for Dummies uses the Google Workspace CLI to label mail and create Tasks and Calendar events — it never sends, trashes, or deletes.">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#fbfbf8">
+<link rel="canonical" href="https://gws-for-dummies.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GWS for Dummies — Gmail triage from plain English">
+<meta property="og:description" content="A quiet, open-source toolkit that labels your Gmail and turns action mail into Tasks and Calendar events — without sending, trashing, or deleting.">
+<meta property="og:url" content="https://gws-for-dummies.vercel.app/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232457d6'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' fill='%23fbfbf8' text-anchor='middle'%3Eg%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-<main class="wrap">
+<a class="skip" href="#main">Skip to content</a>
 
-  <header class="hero">
-    <span class="badge">Gmail &middot; Tasks &middot; Calendar</span>
-    <h1>GWS for Dummies — <span class="accent">email triage made easy</span></h1>
-    <p class="pitch">
-      A layman-friendly Gmail triage toolkit. You type plain English — like
-      <span class="mono">"triage my inbox and label everything"</span> — and a small team of AI
-      sub-agents drives the Google Workspace CLI (<span class="mono">gws</span>) against your own
-      Google account. It labels mail, turns action-required mail into Tasks and Calendar events, and
-      can run a nightly labeler. It reads and labels, but never sends, trashes, or deletes.
-    </p>
-  </header>
+<header class="topbar">
+  <a class="topbar__brand" href="#overview">GWS for Dummies</a>
+  <nav class="topbar__nav" aria-label="Sections">
+    <a class="topbar__link" href="#docs" data-nav="docs">Docs</a>
+    <a class="topbar__link" href="#contact" data-nav="contact">Contact</a>
+  </nav>
+</header>
 
-  <section>
-    <div class="agent-card">
-      <h2>Give this to your agent</h2>
-      <p>Paste one line into your AI coding agent and it will walk you through setup.</p>
-      <div class="copyline">
-        <code id="agentLine">set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt</code>
-        <button class="copy" id="copyBtn" type="button" data-line="set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt">Copy</button>
-      </div>
-    </div>
-  </section>
+<div class="layout">
+  <nav class="rail" aria-label="On this page">
+    <a class="rail__brand" href="#overview">GWS for Dummies</a>
+    <ul class="rail__list">
+      <li><a class="rail__link" href="#overview" data-nav="overview">Overview</a></li>
+      <li><a class="rail__link" href="#features" data-nav="features">What it does</a></li>
+      <li><a class="rail__link" href="#docs" data-nav="docs">Docs</a></li>
+      <li><a class="rail__link" href="#contact" data-nav="contact">Contact me</a></li>
+    </ul>
+    <a class="rail__ext" href="https://github.com/Mulla759" target="_blank" rel="noopener noreferrer">GitHub&nbsp;&#8599;</a>
+  </nav>
 
-  <section>
-    <h2>What it does</h2>
-    <div class="grid">
-      <div class="card">
-        <span class="glyph">01 / triage</span>
-        <h3>Inbox triage &amp; labeling</h3>
-        <p>Security-scans each message, figures out who the sender is and what it says, then applies a clean label taxonomy.</p>
-      </div>
-      <div class="card">
-        <span class="glyph">02 / act</span>
-        <h3>Tasks &amp; Calendar from email</h3>
-        <p>Turns action-required mail into Google Tasks entries and Calendar events, with IDs, links, and undo notes.</p>
-      </div>
-      <div class="card">
-        <span class="glyph">03 / recap</span>
-        <h3>Weekly digest</h3>
-        <p>A read-only summary of the last seven days: meetings, unread email count, and how much mail got labeled.</p>
-      </div>
-      <div class="card">
-        <span class="glyph">04 / autopilot</span>
-        <h3>Nightly labeling</h3>
-        <p>A deterministic sender-to-label script runs nightly (locally or on GitHub Actions) and is idempotent.</p>
-      </div>
-    </div>
-  </section>
+  <div class="col">
+    <main id="main">
 
-  <section>
-    <h2>Quickstart</h2>
-    <pre class="code"><span class="c"># clone, set up, log in, go</span>
-git clone https://github.com/Mulla759/GWSforDummies.git &amp;&amp; cd GWSforDummies
-./setup.sh
-gws auth login -s <span class="g">"gmail,tasks,calendar"</span>
-gws-do <span class="g">"triage my inbox"</span></pre>
-  </section>
+      <section class="hero" id="overview" data-section="overview">
+        <p class="eyebrow">GMAIL &middot; TASKS &middot; CALENDAR</p>
+        <h1 class="hero__title">Turn a crowded inbox into a system you can understand.</h1>
+        <p class="hero__lede">GWS for Dummies lets you tell an AI coding agent what you want in plain English. It uses the Google Workspace CLI to label mail, create Tasks and Calendar events, and prepare useful recaps without sending, trashing, or deleting anything.</p>
+        <div class="hero__actions">
+          <button class="copy btn btn--primary" type="button" data-copy-from="#cmd-setup">Copy the setup command</button>
+          <a class="btn btn--link" href="#docs">Read the docs &darr;</a>
+        </div>
+        <div class="progress" aria-hidden="true"><span class="progress__marker" data-progress></span></div>
+      </section>
 
-  <section>
-    <h2>Links</h2>
-    <div class="links">
-      <a href="/llms.txt">Agent runbook <span>/llms.txt</span></a>
-      <a href="https://github.com/Mulla759/GWSforDummies">Source repo <span>github.com/Mulla759/GWSforDummies</span></a>
-      <a href="https://github.com/googleworkspace/cli">gws CLI <span>github.com/googleworkspace/cli</span></a>
-    </div>
-  </section>
+      <section class="setup" aria-labelledby="setup-title">
+        <h2 class="setup__title" id="setup-title">Give this to your agent</h2>
+        <p class="setup__lede">Paste one line into Codex, Claude Code, or another coding agent.</p>
+        <div class="copyrow">
+          <code class="copyrow__cmd" id="cmd-setup">set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt</code>
+          <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-setup" aria-label="Copy the setup command">Copy</button>
+        </div>
+      </section>
 
-  <footer>
-    Not an official Google product. Built on the open-source <span class="mono">gws</span> CLI.
-  </footer>
+      <section class="proof" aria-labelledby="proof-cap">
+        <figure class="media media--wide" data-reveal>
+          <div class="terminal" role="img" aria-label="Example agent session: the setup command, then a triage run that labels 21 of 24 messages and flags 3, ending with a confirmation that nothing was sent, trashed, or deleted.">
+            <p class="terminal__line terminal__line--cmd">$ gws-do "triage my inbox"</p>
+            <p class="terminal__line">&#8250; routed to&nbsp;&nbsp;email-triage-orchestrator</p>
+            <p class="terminal__line">&middot; scanned&nbsp;&nbsp;&nbsp;24 messages</p>
+            <p class="terminal__line">&middot; flagged&nbsp;&nbsp;&nbsp;3 &nbsp;(security)</p>
+            <p class="terminal__line">&middot; labeled&nbsp;&nbsp;21</p>
+            <p class="terminal__line terminal__line--gap">&nbsp;</p>
+            <p class="terminal__line">&nbsp;&nbsp;Finance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6</p>
+            <p class="terminal__line">&nbsp;&nbsp;Newsletters&nbsp;&nbsp;9</p>
+            <p class="terminal__line">&nbsp;&nbsp;Security&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3</p>
+            <p class="terminal__line">&nbsp;&nbsp;Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3</p>
+            <p class="terminal__line terminal__line--ok">&#10003; nothing sent, trashed, or deleted</p>
+          </div>
+          <figcaption class="media__cap" id="proof-cap">Illustrative output — the setup command and a sample triage run.</figcaption>
+        </figure>
+      </section>
 
-</main>
+      <section class="section features" id="features" data-section="features" aria-labelledby="features-title">
+        <h2 class="section__title" id="features-title">What it does</h2>
 
-<script>
-(function () {
-  var btn = document.getElementById('copyBtn');
-  var line = btn.getAttribute('data-line');
-  var resetTimer;
+        <article class="feature" data-reveal>
+          <header class="feature__head">
+            <span class="feature__label">01 / TRIAGE</span>
+            <span class="feature__meta">PREDICTABLE</span>
+          </header>
+          <h3 class="feature__title">Triage mail into clean labels</h3>
+          <p class="feature__copy">Understands sender and intent, then applies a predictable label taxonomy.</p>
+          <div class="feature__media">
+            <div class="diagram" aria-hidden="true">
+              <div class="diagram__row"><span class="diagram__key">Finance</span><span class="diagram__val">6</span></div>
+              <div class="diagram__row"><span class="diagram__key">Receipts &amp; Orders</span><span class="diagram__val">14</span></div>
+              <div class="diagram__row"><span class="diagram__key">Newsletters</span><span class="diagram__val">9</span></div>
+              <div class="diagram__row"><span class="diagram__key">Security</span><span class="diagram__val">3</span></div>
+            </div>
+          </div>
+          <a class="feature__action" href="https://github.com/Mulla759/GWSforDummies/blob/master/scripts/label-rules.tsv" target="_blank" rel="noopener noreferrer">See the label rules&nbsp;&#8599;</a>
+        </article>
 
-  function flash(label) {
-    btn.textContent = label;
-    btn.classList.add('done');
-    clearTimeout(resetTimer);
-    resetTimer = setTimeout(function () {
-      btn.textContent = 'Copy';
-      btn.classList.remove('done');
-    }, 1800);
-  }
+        <article class="feature" data-reveal>
+          <header class="feature__head">
+            <span class="feature__label">02 / ACT</span>
+            <span class="feature__meta">UNDOABLE</span>
+          </header>
+          <h3 class="feature__title">Turn action mail into Tasks and events</h3>
+          <p class="feature__copy">Creates traceable Tasks and Calendar events with source links and undo notes.</p>
+          <div class="feature__media">
+            <div class="diagram" aria-hidden="true">
+              <div class="diagram__row"><span class="diagram__key">&#9744; Reply to invoice</span><span class="diagram__val">due Fri</span></div>
+              <div class="diagram__row"><span class="diagram__key">&#9745; Send signed form</span><span class="diagram__val">source linked</span></div>
+              <div class="diagram__row"><span class="diagram__key">&#9719; Call with Sam</span><span class="diagram__val">Tue 10:00</span></div>
+            </div>
+          </div>
+          <a class="feature__action" href="https://github.com/Mulla759/GWSforDummies/blob/master/actions/gmail-actions.json" target="_blank" rel="noopener noreferrer">See what gets created&nbsp;&#8599;</a>
+        </article>
 
-  function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'absolute';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    var ok = false;
-    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-    document.body.removeChild(ta);
-    flash(ok ? 'Copied!' : 'Press Ctrl+C');
-  }
+        <figure class="media media--editorial" data-reveal aria-hidden="true">
+          <svg class="editorial" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <rect width="1200" height="420" fill="#f4f4ef"/>
+            <g fill="none" stroke="#cfcfc6" stroke-width="2">
+              <rect x="150" y="196" width="360" height="60" rx="6"/>
+              <rect x="150" y="126" width="360" height="60" rx="6"/>
+              <rect x="150" y="56" width="360" height="60" rx="6"/>
+              <path d="M540 86 h360 M540 156 h300 M540 226 h220" stroke-width="3" stroke-linecap="round"/>
+              <rect x="960" y="56" width="180" height="200" rx="10"/>
+              <path d="M1000 106 h100 M1000 146 h100 M1000 186 h60" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <g fill="#2457d6">
+              <rect x="130" y="70" width="8" height="8"/><rect x="130" y="140" width="8" height="8"/><rect x="130" y="210" width="8" height="8"/>
+            </g>
+            <path d="M740 300 q60 40 140 0 t160 0" fill="none" stroke="#e3e3dc" stroke-width="3"/>
+          </svg>
+        </figure>
 
-  btn.addEventListener('click', function () {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(line).then(function () {
-        flash('Copied!');
-      }).catch(function () {
-        fallbackCopy(line);
-      });
-    } else {
-      fallbackCopy(line);
-    }
-  });
-})();
-</script>
+        <article class="feature" data-reveal>
+          <header class="feature__head">
+            <span class="feature__label">03 / RECAP</span>
+            <span class="feature__meta">READ-ONLY</span>
+          </header>
+          <h3 class="feature__title">Review the week without reopening every thread</h3>
+          <p class="feature__copy">Produces a read-only summary of meetings, unread mail, and triage activity.</p>
+          <div class="feature__media">
+            <div class="diagram" aria-hidden="true">
+              <div class="diagram__row"><span class="diagram__key">Meetings this week</span><span class="diagram__val">6</span></div>
+              <div class="diagram__row"><span class="diagram__key">Unread</span><span class="diagram__val">23</span></div>
+              <div class="diagram__row"><span class="diagram__key">Labeled in 7 days</span><span class="diagram__val">41</span></div>
+            </div>
+          </div>
+          <a class="feature__action" href="https://github.com/Mulla759/GWSforDummies/blob/master/scripts/weekly-digest.sh" target="_blank" rel="noopener noreferrer">Preview a recap&nbsp;&#8599;</a>
+        </article>
+
+        <article class="feature" data-reveal>
+          <header class="feature__head">
+            <span class="feature__label">04 / AUTOPILOT</span>
+            <span class="feature__meta">IDEMPOTENT</span>
+          </header>
+          <h3 class="feature__title">Keep the inbox organized overnight</h3>
+          <p class="feature__copy">Runs deterministic, idempotent sender-to-label rules locally or in GitHub Actions.</p>
+          <div class="feature__media">
+            <div class="diagram" aria-hidden="true">
+              <div class="diagram__row"><span class="diagram__key">Finance</span><span class="diagram__val">chase.com &middot; amex.com</span></div>
+              <div class="diagram__row"><span class="diagram__key">Newsletters</span><span class="diagram__val">substack.com &middot; beehiiv.com</span></div>
+              <div class="diagram__row"><span class="diagram__key">Priority</span><span class="diagram__val">"action required" &middot; overdue</span></div>
+            </div>
+          </div>
+          <a class="feature__action" href="https://github.com/Mulla759/GWSforDummies/blob/master/examples/github-actions/nightly-gmail-label.yml" target="_blank" rel="noopener noreferrer">See the nightly workflow&nbsp;&#8599;</a>
+        </article>
+      </section>
+
+      <section class="section" id="docs" data-section="docs" aria-labelledby="docs-title">
+        <h2 class="section__title" id="docs-title">Docs</h2>
+        <p class="section__lede">Set up in three steps.</p>
+
+        <div class="docs__steps">
+          <article class="docs__step" id="docs-install" data-reveal>
+            <h3 class="docs__step-title">01 &nbsp;Install</h3>
+            <p class="docs__step-copy">Install the Google Workspace CLI and clone the project.</p>
+            <div class="copyrow">
+              <code class="copyrow__cmd" id="cmd-install">npm install -g @googleworkspace/cli</code>
+              <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-install" aria-label="Copy install command">Copy</button>
+            </div>
+            <div class="copyrow">
+              <code class="copyrow__cmd" id="cmd-clone">git clone https://github.com/Mulla759/GWSforDummies.git &amp;&amp; cd GWSforDummies</code>
+              <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-clone" aria-label="Copy clone command">Copy</button>
+            </div>
+          </article>
+
+          <article class="docs__step" id="docs-auth" data-reveal>
+            <h3 class="docs__step-title">02 &nbsp;Authenticate</h3>
+            <p class="docs__step-copy">Sign in to your own Google account. The runbook covers creating the OAuth client first.</p>
+            <div class="copyrow">
+              <code class="copyrow__cmd" id="cmd-auth">gws auth login -s "gmail,tasks,calendar"</code>
+              <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-auth" aria-label="Copy sign-in command">Copy</button>
+            </div>
+            <details class="docs__more">
+              <summary>Need the OAuth client step?</summary>
+              <p>The agent runbook walks through creating a free Google Cloud project, enabling the Gmail, Calendar, and Tasks APIs, and placing <code>client_secret.json</code>. <a href="/llms.txt">Open the full runbook</a></p>
+            </details>
+          </article>
+
+          <article class="docs__step" id="docs-ask" data-reveal>
+            <h3 class="docs__step-title">03 &nbsp;Ask your agent</h3>
+            <p class="docs__step-copy">Describe what you want in plain English.</p>
+            <div class="copyrow">
+              <code class="copyrow__cmd" id="cmd-ask">gws-do "triage my inbox"</code>
+              <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-ask" aria-label="Copy the example command">Copy</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="docs__safety" id="docs-safety">
+          <h3 class="docs__step-title">Safety model</h3>
+          <p>Reads and labels. <strong>Never sends, trashes, or deletes.</strong></p>
+        </div>
+
+        <ul class="docs__links">
+          <li><a href="/llms.txt">Agent runbook <span class="docs__path">/llms.txt</span></a></li>
+          <li><a href="https://github.com/Mulla759/GWSforDummies" target="_blank" rel="noopener noreferrer">Source code <span class="docs__path">github.com/Mulla759/GWSforDummies</span><span aria-hidden="true">&nbsp;&#8599;</span></a></li>
+          <li><a href="https://github.com/googleworkspace/cli" target="_blank" rel="noopener noreferrer">GWS CLI <span class="docs__path">github.com/googleworkspace/cli</span><span aria-hidden="true">&nbsp;&#8599;</span></a></li>
+        </ul>
+      </section>
+
+      <section class="section contact" id="contact" data-section="contact" aria-labelledby="contact-title">
+        <img class="contact__avatar" src="assets/avatar.jpg" width="104" height="104" alt="Portrait of Abdullahi Abdi" loading="lazy" decoding="async">
+        <div class="contact__identity">
+          <h2 class="contact__name" id="contact-title">Built by Abdullahi Abdi</h2>
+          <p class="contact__role">Student &middot; Computer scientist</p>
+        </div>
+        <div class="contact__invite">
+          <p class="contact__pitch">Have a setup issue, an improvement, or a workflow worth adding? I&rsquo;d like to hear about it.</p>
+          <div class="contact__actions">
+            <button class="copy btn btn--primary" type="button" data-copy-from="#contact-email" data-copy-type="email">Copy my email</button>
+            <a class="btn btn--outline" id="contact-email" href="mailto:abdullahiabdi5600@gmail.com">abdullahiabdi5600@gmail.com</a>
+            <a class="btn btn--outline" href="https://github.com/Mulla759" target="_blank" rel="noopener noreferrer">GitHub&nbsp;&#8599;</a>
+            <a class="btn btn--outline" href="https://linkedin.com/in/abdull-abdi5" target="_blank" rel="noopener noreferrer">LinkedIn&nbsp;&#8599;</a>
+            <a class="btn btn--outline" href="https://x.com/AAbdallahDev" target="_blank" rel="noopener noreferrer">X&nbsp;&#8599;</a>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__line">Not an official Google product. Built on the open-source <code>gws</code> CLI.</p>
+      <a class="site-footer__link" href="https://github.com/Mulla759/GWSforDummies" target="_blank" rel="noopener noreferrer">GitHub&nbsp;&#8599;</a>
+    </footer>
+  </div>
+</div>
+
+<div id="copy-live" class="sr-only" role="status" aria-live="polite"></div>
+<script src="site.js" defer></script>
 </body>
 </html>
