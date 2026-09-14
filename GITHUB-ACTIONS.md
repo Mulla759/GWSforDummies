@@ -5,7 +5,7 @@ happens even when your computer is powered off. The workflow ships as a **templa
 [`examples/github-actions/nightly-gmail-label.yml`](examples/github-actions/nightly-gmail-label.yml):
 copy it into **your own private repo** at `.github/workflows/nightly-gmail-label.yml`.
 
-> **This repo ships no secrets and runs no jobs for you.** You create your own private
+> **This repo ships no secrets and runs no mailbox jobs for you.** You create your own private
 > repo and store **your own** `GWS_CREDENTIALS`. Never reuse anyone else's credentials.
 
 > **Labeling rules:** the job reads `scripts/label-rules.tsv`. Curate it for your own inbox

@@ -18,6 +18,22 @@
   border-radius: 12px;
 }
 
+.flow__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.flow__scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.flow__scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 4px;
+}
+
 .flow__svg {
   display: block;
   width: 100%;
@@ -304,4 +320,21 @@
 .flow.is-paused *::before,
 .flow.is-paused *::after {
   animation-play-state: paused !important;
+}
+
+/* Mobile: keep the labels legible by letting the figure scroll inside its own
+   frame (never the page). The Replay control stays pinned to the visible frame. */
+@media (max-width: 639px) {
+  .flow {
+    padding: 14px;
+  }
+
+  .flow__svg {
+    min-width: 720px;
+  }
+
+  .flow__replay {
+    top: 10px;
+    right: 12px;
+  }
 }

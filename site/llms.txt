@@ -313,7 +313,7 @@ gh run watch --repo <your-account>/gws-for-dummies
 The workflow template (`examples/github-actions/nightly-gmail-label.yml`) restores the
 secret to a file, points `gws` at it with `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE` +
 `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file`, runs the labeler, then scrubs the file. It
-uses **your** credentials only — this public repo ships no secrets and runs no jobs.
+uses **your** credentials only — this public repo ships no secrets and runs no mailbox jobs.
 The `cron:` line is UTC — adjust it to the human's timezone. GitHub disables scheduled
 workflows after **60 days of repo inactivity**; a push or manual run resets it.
 

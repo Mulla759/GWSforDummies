@@ -1,0 +1,35 @@
+name: lighthouse
+
+# Secret-free quality gate: audits the deployed landing page against the
+# redesign's targets (Performance 95+, Accessibility/Best-Practices/SEO 100).
+# Runs weekly and on demand — NOT on every push, so it never blocks a deploy
+# or competes with the Vercel build. Uses no repository secrets.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 13 * * 1" # Mondays, 13:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli autorun
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          retention-days: 14
