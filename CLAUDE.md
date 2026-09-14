@@ -16,7 +16,7 @@ handles **Gmail triage & labeling** and **email → Tasks/Calendar actions**.
 > installed and `gws` is authenticated.
 >
 > **Want an agent to do the setup for you?** Point it at
-> [`https://gwsfordummies.to/llms.txt`](https://gwsfordummies.to/llms.txt) — a single
+> [`https://gws-for-dummies.vercel.app/llms.txt`](https://gws-for-dummies.vercel.app/llms.txt) — a single
 > agent-readable runbook covering the toolchain, the Google Cloud OAuth consent + client,
 > `gws auth`, the first triage run, and the nightly GitHub Action.
 >

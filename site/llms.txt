@@ -13,8 +13,7 @@ runbook: toolchain → **Google Cloud OAuth credentials** → `gws auth` → clo
 triage → nightly GitHub Action.
 
 - **Repo:** https://github.com/Mulla759/GWSforDummies
-- **This file:** https://gwsfordummies.to/llms.txt
-  (until DNS resolves: https://gws-for-dummies.vercel.app/llms.txt)
+- **This file:** https://gws-for-dummies.vercel.app/llms.txt
 - **Engine:** [`gws`](https://github.com/googleworkspace/cli) (Google Workspace CLI, v0.22.5+)
 - **License:** open source, provided as-is. Not an official Google product.
 

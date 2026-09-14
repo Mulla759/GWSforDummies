@@ -1,6 +1,6 @@
 # GWS for Dummies — static site
 
-This folder is the static site served at **https://gwsfordummies.to**. It has no
+This folder is the static site served at **https://gws-for-dummies.vercel.app**. It has no
 framework and no build step: Vercel serves the files exactly as they are.
 
 - `index.html` — the landing page (self-contained; inline CSS/JS).
@@ -18,16 +18,6 @@ build command empty and set the output directory to `.` (or just leave it unset)
 Import the repo in Vercel and set **Root Directory = `site`**; then every push
 redeploys automatically and PRs get preview URLs. (Vercel → Project → Settings → Git.)
 
-### Fallback: GitHub Action
-
-`.github/workflows/deploy-site.yml` deploys `site/` to production on push (and via
-manual dispatch). It needs **one secret**:
-
-1. Create a Vercel token at https://vercel.com/account/tokens.
-2. Add it to the repo as `VERCEL_TOKEN` (Settings → Secrets and variables → Actions).
-
-The Vercel org/project IDs are already hard-coded in the workflow (they are not secret).
-
 ### Option A — Vercel CLI, from inside this folder
 
 ```bash
@@ -43,21 +33,22 @@ vercel --prod     # promote to production
 3. Framework Preset: **Other**. Leave Build Command and Output Directory empty.
 4. Deploy. Every push to the default branch redeploys; PRs get preview URLs.
 
-## Custom domain: gwsfordummies.to
+## Custom domain (optional)
 
-1. Open the project in Vercel → **Settings → Domains**.
-2. Add `gwsfordummies.to` (and `www.gwsfordummies.to` if you want the `www` variant).
-3. Vercel shows the DNS records to create at your registrar:
-   - Apex (`gwsfordummies.to`): an **A** record to Vercel's IP (or an **ALIAS/ANAME**
-     to `cname.vercel-dns.com` if your registrar supports it).
-   - Subdomain (`www`): a **CNAME** to `cname.vercel-dns.com`.
-4. Add those records at your DNS provider. Propagation is usually minutes but can
-   take up to 48 hours.
-5. Once verified, Vercel issues the TLS certificate automatically.
+The site is served for free at **https://gws-for-dummies.vercel.app** — nothing else is
+required. To use a domain **you own** instead:
 
-After the domain is live, confirm the key file resolves correctly:
+1. In Vercel → Project → **Settings → Domains**, add the domain (apex and/or `www`).
+2. Create the DNS records Vercel shows at your registrar:
+   - Apex: an **A** record to Vercel's IP (e.g. `76.76.21.21`), or an **ALIAS/ANAME**
+     to `cname.vercel-dns.com`.
+   - `www`: a **CNAME** to `cname.vercel-dns.com`.
+   - (Or point the domain's nameservers at `ns1.vercel-dns.com` / `ns2.vercel-dns.com`.)
+3. Propagation is minutes to 48h; Vercel then issues TLS automatically.
+
+Confirm the runbook resolves (substitute your domain):
 
 ```bash
-curl -I https://gwsfordummies.to/llms.txt
+curl -I https://gws-for-dummies.vercel.app/llms.txt
 # expect: content-type: text/plain; charset=utf-8
 ```

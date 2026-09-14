@@ -25,7 +25,7 @@ gws-do --list      # everything it can do      gws-do --status   # is it ready?
 Don't want to read the steps? Give this line to Claude Code, Cursor, or any coding agent:
 
 ```text
-set up gws for dummies — https://gwsfordummies.to/llms.txt
+set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt
 ```
 
 That page is a single agent-readable runbook covering the whole install: the toolchain,
@@ -68,7 +68,7 @@ gws-do "triage my inbox"
 
 First-time Google OAuth (your own free GCP project + `client_secret.json`) is walked
 through in [`SETUP.md`](SETUP.md) — or let an agent do it via
-[`gwsfordummies.to/llms.txt`](https://gwsfordummies.to/llms.txt).
+[`gws-for-dummies.vercel.app/llms.txt`](https://gws-for-dummies.vercel.app/llms.txt).
 
 > **Windows note:** the safety hook ships as `python3` (macOS/Linux). On Windows, change
 > it to `python` in `.claude/settings.json`, and run `gws-do` via `bin/gws-do.cmd`.

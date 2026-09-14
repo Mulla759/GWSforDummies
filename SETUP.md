@@ -6,7 +6,7 @@ gets it from the login). Work top to bottom — the project does nothing until s
 are done.
 
 > **Prefer an agent do it?** Point your AI assistant at
-> [`https://gwsfordummies.to/llms.txt`](https://gwsfordummies.to/llms.txt) — the same steps
+> [`https://gws-for-dummies.vercel.app/llms.txt`](https://gws-for-dummies.vercel.app/llms.txt) — the same steps
 > below, written as a single agent-readable runbook (install → Google OAuth → auth →
 > triage → nightly Action).
 
