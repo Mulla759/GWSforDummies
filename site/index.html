@@ -56,11 +56,25 @@
       </section>
 
       <section class="setup" aria-labelledby="setup-title">
-        <h2 class="setup__title" id="setup-title">Give this to your agent</h2>
-        <p class="setup__lede">Paste one line into Codex, Claude Code, or another coding agent.</p>
-        <div class="copyrow">
-          <code class="copyrow__cmd" id="cmd-setup">set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt</code>
-          <button class="copy copyrow__btn btn btn--outline" type="button" data-copy-from="#cmd-setup" aria-label="Copy the setup command">Copy</button>
+        <h2 class="setup__title" id="setup-title">Set up with your coding agent</h2>
+        <p class="setup__lede">Open any supported agent and paste the instruction below. It will read the setup guide and walk you through installing the CLI, connecting your Google account, and running your first inbox triage.</p>
+
+        <div class="agents">
+          <span class="agents__label">Works with</span>
+          <ul class="agents__list">
+            <li class="agents__item" title="Codex"><img class="agents__mark" src="assets/agents/codex.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">Codex</span></li>
+            <li class="agents__item" title="Claude Code"><img class="agents__mark" src="assets/agents/claude-code.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">Claude Code</span></li>
+            <li class="agents__item" title="Cursor"><img class="agents__mark" src="assets/agents/cursor.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">Cursor</span></li>
+            <li class="agents__item" title="OpenCode"><img class="agents__mark" src="assets/agents/opencode.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">OpenCode</span></li>
+            <li class="agents__item" title="Pi"><img class="agents__mark" src="assets/agents/pi.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">Pi</span></li>
+            <li class="agents__item" title="Gemini CLI"><img class="agents__mark" src="assets/agents/gemini-cli.svg" alt="" width="22" height="22" loading="lazy" decoding="async"><span class="sr-only">Gemini CLI</span></li>
+          </ul>
+        </div>
+
+        <div class="cli">
+          <span class="cli__prompt" aria-hidden="true">$</span>
+          <code class="cli__cmd" id="cmd-setup">set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt</code>
+          <button class="copy cli__btn" type="button" data-copy-from="#cmd-setup" data-copy-announce="Copied. Paste it into your coding agent." data-copy-reset="2000">Copy setup prompt</button>
         </div>
       </section>
 

@@ -25,6 +25,7 @@ Use the references as a system, not as pages to clone.
 | [Dogancan](https://www.dogancan.dev/) | Compact personal introduction, copy-email feedback, understated link treatment | Resume-style content density |
 | [Jay Suthar](https://sutharjay.com/) | Short functional labels, plain-spoken links, small editorial image moments | A bare list with too little product explanation |
 | [Paul Faivret](https://www.paulfaivret.com/) | Primary page flow: statement → explanation → large visual → repeat; thin dividers; broad media frames | Portfolio carousels or excessive project length |
+| [Treg](https://treg.to/) | A compact “give this to your agent” module that pairs recognizable agent logos with one unmistakable CLI command | Its heavier card shadow, rounded SaaS shell, green terminal accent, or dense surrounding product UI |
 | [Abdullahi’s Gravatar](https://gravatar.com/tremendousdelectablye2bab3e728) | Profile image and verified identity details for the contact area | The Gravatar card styling |
 
 ## Current live iteration audit — September 14, 2026
@@ -147,25 +148,115 @@ Below the copy, add a single thin rule with a small square position marker. This
 
 ### 2. Setup command
 
-Keep the current “Give this to your agent” idea, but remove the large glowing card.
+This is the final focused change. The current sentence — `Paste one line into Codex, Claude Code, or another coding agent.` — is too vague because it does not explain what happens after the paste.
 
-Present it as a paper-like command row:
+Borrow Treg’s clarity: show which coding agents accept the instruction, present the instruction as an unmistakable CLI line, and keep one copy action. Preserve the surrounding GWS white-paper design.
+
+#### Final copy
+
+**Heading**
+
+> Set up with your coding agent
+
+**Explanation**
+
+> Open any supported agent and paste the instruction below. It will read the setup guide and walk you through installing the CLI, connecting your Google account, and running your first inbox triage.
+
+This sentence should replace the current vague helper copy. Do not add another paragraph beneath it.
+
+#### Compatible-agent row
+
+Place a compact row of agent marks between the explanation and command strip:
 
 ```text
-Give this to your agent
-Paste one line into Codex, Claude Code, or another coding agent.
-
-set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt    [Copy]
+Works with   [Codex] [Claude Code] [Cursor] [OpenCode] [Pi] [Gemini CLI]
 ```
 
-Style:
+Use these six agents, in this order:
 
-- White or `--paper-subtle` background.
-- One 1px border, `8px` radius maximum.
-- Monospace only for the command.
-- The button has an explicit accessible name: “Copy the setup command.”
-- After activation, change the label to `Copied ✓` for about 1.6 seconds and announce it through `aria-live="polite"`.
-- Keyboard focus must be clearly visible.
+1. Codex
+2. Claude Code
+3. Cursor
+4. OpenCode
+5. Pi
+6. Gemini CLI
+
+Logo rules:
+
+- Use the real official mark for each agent, not a generic robot icon or emoji.
+- Save optimized assets locally under a clear directory such as `/public/agents/`; do not hotlink the icons from Treg or `unpkg` at runtime.
+- Prefer SVG. If an official mark is only available as a raster file, use a transparent WebP/PNG at twice the rendered resolution.
+- Render marks at `20–22px` on desktop and `18–20px` on mobile.
+- Preserve official brand colors, but keep the marks small enough that the page still reads as black, paper, and blue.
+- No icon containers, circles, pills, borders, or individual hover cards.
+- Set the resting opacity near `0.78`; move to `1` on hover.
+- Provide each logo name through accessible text. Decorative image nodes can use `alt=""` when the adjacent or visually hidden name is present.
+- Add a small native-style tooltip with the agent’s name on hover. Do not make logos clickable unless there is a real destination worth visiting.
+- The row may wrap into two lines on narrow screens. Never make it horizontally scroll.
+
+#### Final command module
+
+Use this content:
+
+```text
+$  set up gws for dummies — https://gws-for-dummies.vercel.app/llms.txt    [Copy setup prompt]
+```
+
+The outer section remains open on the white-paper page. Only the command itself becomes a compact CLI strip:
+
+- Near-black background: `#171715`.
+- Warm white command text: `#f7f7f2`.
+- Use the existing site blue for the `$` prompt; do not introduce Treg’s green accent.
+- Height: `52–58px` desktop and auto-height on mobile.
+- Padding: `10–12px 12–14px`.
+- Radius: `8px`, matching existing command and media geometry.
+- No surrounding white card, floating shadow, gradient, glow, or fake traffic-light window controls.
+- Monospace only inside the command strip.
+- Keep the command on one line when space permits. On mobile, allow the URL to wrap cleanly and place the copy button beneath it if required.
+- The copy button is a quiet outlined control inside the strip: transparent background, `1px solid rgb(255 255 255 / 0.24)`, warm-white text.
+- Button hover: slightly lighter border and background. No bounce or scale.
+
+#### Copy interaction
+
+- Change the button label from `Copy setup prompt` to `Copied ✓` for about two seconds.
+- Announce: `Copied. Paste it into your coding agent.` through `aria-live="polite"`.
+- Keep focus on the same button; do not open a modal or automatically scroll.
+- Retain the clipboard fallback for browsers where `navigator.clipboard` is unavailable.
+- Use the same command string for the hero CTA and this module so the two copy actions cannot drift.
+
+#### Suggested structure
+
+```text
+SetupCommand
+├── Heading
+├── Explanation
+├── AgentCompatibilityList
+│   └── AgentMark × 6
+├── CliCopyRow
+│   ├── PromptSymbol
+│   ├── Command
+│   └── CopyButton
+└── CopyStatus
+```
+
+Keep the compatibility data in one array:
+
+```text
+agent name + local icon path
+```
+
+Do not build six separate logo components or add a carousel/package selector. Every supported agent receives the same instruction.
+
+#### Acceptance criteria for this fix
+
+- A visitor immediately understands where to paste the instruction and what the agent will help them do.
+- Codex, Claude Code, Cursor, OpenCode, Pi, and Gemini CLI are visually represented.
+- Agent names remain available to screen readers and unfamiliar logos can be identified by tooltip.
+- Only the CLI strip is dark; the overall section and page remain minimal and paper-white.
+- The command and copy control remain usable at `320px` width without horizontal page scrolling.
+- Copy feedback explicitly tells the visitor to paste the result into their coding agent.
+- All logo assets are local and add no runtime third-party image requests.
+- The change does not alter the hero, agentic animation, feature rows, Docs, navigation, or Contact section.
 
 ### 3. Product proof image
 
@@ -449,13 +540,16 @@ No oversized footer, newsletter form, or extra sitemap.
   --accent: #2457d6;
   --accent-hover: #173fa8;
   --focus: #2457d6;
+  --terminal: #171715;
+  --terminal-text: #f7f7f2;
 }
 ```
 
 Rules:
 
 - Use `--paper` for nearly the entire page.
-- Use `--paper-subtle` only for command rows, docs examples, and the final contact field.
+- Use `--paper-subtle` for docs examples and quiet proof surfaces.
+- The setup CLI strip is the single permitted `--terminal` surface. Do not spread the dark treatment to other sections.
 - Use blue only for actionable text, selected navigation, focus, and small state accents.
 - Remove all gradients, colored glows, translucent glass, and oversized colored panels.
 - Avoid pure gray-on-gray text that drops below WCAG AA contrast.
@@ -633,6 +727,7 @@ The redesign is complete when:
 - The workflow figure visibly shows messages trickling into an orchestrator, routing to specialist agents, and ending in an audited safety state.
 - The workflow runs once on entry, offers replay, stays readable when complete, and has an equivalent reduced-motion state.
 - Setup and email copy controls provide clear `Copied ✓` feedback.
+- The setup module explains what happens after pasting, shows all six compatible agent marks, and uses one compact CLI strip without changing the rest of the paper-white page.
 - The contact area uses Abdullahi’s Gravatar portrait and verified profile links.
 - Stock imagery is sparse, relevant, licensed, local, responsive, and lazy-loaded.
 - The page has no gradients, glow effects, glass cards, huge pills, or unnecessary animation.

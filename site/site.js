@@ -76,7 +76,7 @@
       if (live) { live.textContent = message; }
     }
 
-    function scheduleReset(button) {
+    function scheduleReset(button, ms) {
       if (timers.has(button)) { clearTimeout(timers.get(button)); }
       timers.set(button, setTimeout(function () {
         timers.delete(button);
@@ -88,7 +88,7 @@
         }
         button.classList.remove('is-copied');
         announce('');
-      }, RESET_MS));
+      }, ms || RESET_MS));
     }
 
     function onCopy(button) {
@@ -116,19 +116,23 @@
         });
       }
 
+      var doneMsg = button.getAttribute('data-copy-announce') || 'Copied to clipboard';
+      var failMsg = 'Copy failed \u2014 select and copy manually';
+      var resetMs = parseInt(button.getAttribute('data-copy-reset'), 10) || RESET_MS;
+
       copyText(text).then(function (ok) {
         if (ok) {
           button.textContent = 'Copied \u2713';
           button.classList.add('is-copied');
-          announce('Copied to clipboard');
-          scheduleReset(button);
+          announce(doneMsg);
+          scheduleReset(button, resetMs);
         } else {
-          announce('Copy failed \u2014 select and copy manually');
-          scheduleReset(button);
+          announce(failMsg);
+          scheduleReset(button, resetMs);
         }
       }, function () {
-        announce('Copy failed \u2014 select and copy manually');
-        scheduleReset(button);
+        announce(failMsg);
+        scheduleReset(button, resetMs);
       });
     }
 

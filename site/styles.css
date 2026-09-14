@@ -12,6 +12,9 @@
   --accent: #2457d6;
   --accent-hover: #173fa8;
   --focus: #2457d6;
+  --terminal: #171715;
+  --terminal-text: #f7f7f2;
+  --terminal-prompt: #5b86e6;
 }
 
 *,
@@ -447,6 +450,100 @@ main {
   color: var(--ink-muted);
 }
 
+.agents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 22px 0 20px;
+}
+
+.agents__label {
+  color: var(--ink-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.agents__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agents__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.agents__mark {
+  display: block;
+  width: 22px;
+  height: 22px;
+  opacity: 0.78;
+  transition: opacity 160ms ease-out;
+}
+
+.agents__item:hover .agents__mark {
+  opacity: 1;
+}
+
+.cli {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 11px 13px;
+  background: var(--terminal);
+  border-radius: 8px;
+}
+
+.cli__prompt {
+  flex: 0 0 auto;
+  color: var(--terminal-prompt);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.cli__cmd {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  color: var(--terminal-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.cli__btn {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 0.24);
+  border-radius: 8px;
+  color: var(--terminal-text);
+  font-size: 13px;
+  transition: border-color 160ms ease-out, background-color 160ms ease-out;
+}
+
+.cli__btn:hover {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.4);
+}
+
+.cli__btn.is-copied {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.4);
+  color: var(--terminal-text);
+}
+
 .proof {
   margin-top: clamp(40px, 7vw, 72px);
 }
@@ -843,6 +940,21 @@ main {
     border-bottom: 0;
     text-decoration: underline;
     text-underline-offset: 4px;
+  }
+
+  .agents__mark {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cli__cmd {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .cli__btn {
+    width: 100%;
+    min-height: 44px;
   }
 }
 
