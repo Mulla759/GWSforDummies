@@ -450,6 +450,12 @@ main {
   color: var(--ink-muted);
 }
 
+.setup__alt {
+  margin: 20px 0 10px;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
 .agents {
   display: flex;
   flex-wrap: wrap;

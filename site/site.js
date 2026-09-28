@@ -127,10 +127,12 @@
           announce(doneMsg);
           scheduleReset(button, resetMs);
         } else {
+          button.textContent = 'Copy failed';
           announce(failMsg);
           scheduleReset(button, resetMs);
         }
       }, function () {
+        button.textContent = 'Copy failed';
         announce(failMsg);
         scheduleReset(button, resetMs);
       });
